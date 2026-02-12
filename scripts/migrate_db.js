@@ -14,7 +14,7 @@ const DB_HOST = 'db.tgfcwkfolmyaawscfovu.supabase.co';
 const DB_PORT = 5432;
 const DB_USER = 'postgres';
 const DB_NAME = 'postgres';
-// Password should be provided via prompt or Env Var
+const DB_PASS = process.env.DB_PASS || '';
 
 // URL Encoded Password for Connection String (handling special chars like @)
 const encodedPass = encodeURIComponent(DB_PASS);
@@ -31,10 +31,10 @@ async function runMigration() {
         await client.connect();
         console.log('Conectado!');
 
-        const sqlPath = path.join(__dirname, '../supabase/migrations/20240212_initial_schema.sql');
+        const sqlPath = path.join(__dirname, '../supabase/migrations/20240212_harden_rls.sql');
         const sql = fs.readFileSync(sqlPath, 'utf8');
 
-        console.log('Executando script de criação de tabelas...');
+        console.log('Executando script de HARDENING (Segurança)...');
         await client.query(sql);
         console.log('✅ Migração concluída com sucesso! As tabelas foram criadas.');
 
