@@ -1,7 +1,8 @@
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { ClaimStatus, LinkStatus, Role, User, WarrantyClaim, WarrantyEvent, Store } from '../types';
 
 const API_URL = 'http://localhost:3001';
-const USE_MOCK = true; // Set to false to use the Real Backend
+const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true'; // Correctly parse boolean
 
 // --- HELPER: Local Storage for Session Persistence ---
 const STORAGE_KEY = 'relm_token';
@@ -244,12 +245,12 @@ const RemoteApi = {
         .single();
 
       if (profileError || !userProfile) {
-        // Fallback if profile missing (shouldn't happen with correct seeding)
+        // Fallback if profile missing
         return {
           id: data.user.id,
           name: data.user.user_metadata.name || email.split('@')[0],
           email: email,
-          role: Role.LOJA, // Fallback to LOJA since GUEST doesn't exist
+          role: Role.LOJA,
           active: true
         } as User;
       }
@@ -263,8 +264,6 @@ const RemoteApi = {
         active: userProfile.active
       };
 
-      // We don't need to manually store tokens, Supabase client handles session persistence.
-      // But keeping LOCAL STORAGE sync for legacy app compatibility if needed
       localStorage.setItem(USER_KEY, JSON.stringify(user));
 
       return user;
@@ -275,86 +274,91 @@ const RemoteApi = {
       localStorage.removeItem(STORAGE_KEY);
     },
     getCurrentUser: () => getStoredUser()
-            protocol_number: `HB-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`,
-    status: ClaimStatus.RECEBIDO,
-    link_status: LinkStatus.PENDING_REVIEW,
-    customer_name: data.customerName,
-    customer_phone: data.customerPhone,
-    customer_email: data.customerEmail,
-    item_type: data.itemType,
-    product_description: data.productDescription,
-    serial_number: data.serialNumber,
-    invoice_number: data.invoiceNumber,
-    purchase_date: data.purchaseDate,
-    purchase_store_name: data.purchaseStoreName,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  }])
-          .select()
-    .single();
-
-  if(error) throw error;
-
-  return {
-    id: newClaim.id,
-    protocolNumber: newClaim.protocol_number,
-    customerName: newClaim.customer_name,
-    customerPhone: newClaim.customer_phone,
-    customerEmail: newClaim.customer_email,
-    itemType: newClaim.item_type,
-    productDescription: newClaim.product_description,
-    serialNumber: newClaim.serial_number,
-    invoiceNumber: newClaim.invoice_number,
-    purchaseDate: newClaim.purchase_date,
-    purchaseStoreName: newClaim.purchase_store_name,
-    storeId: newClaim.store_id,
-    linkStatus: newClaim.link_status as LinkStatus,
-    status: newClaim.status as ClaimStatus,
-    createdAt: newClaim.created_at,
-    updatedAt: newClaim.updated_at
-  } as WarrantyClaim;
-},
-  list: async () => {
-    const currentUser = getStoredUser();
-    if (!currentUser) throw new Error('Unauthorized');
-
-    let query = supabase.from('warranty_claims').select('*');
-
-    if (currentUser.role === Role.LOJA) {
-      query = query.eq('store_id', currentUser.storeId);
-    }
-
-    const { data, error } = await query;
-    if (error) throw error;
-
-    return data.map((c: any) => {
-      const claim: WarrantyClaim = {
-        id: c.id,
-        protocolNumber: c.protocol_number,
-        customerName: c.customer_name,
-        customerPhone: c.customer_phone,
-        customerEmail: c.customer_email,
-        itemType: c.item_type,
-        productDescription: c.product_description,
-        serialNumber: c.serial_number,
-        invoiceNumber: c.invoice_number,
-        purchaseDate: c.purchase_date,
-        purchaseStoreName: c.purchase_store_name,
-        storeId: c.store_id,
-        linkStatus: c.link_status as LinkStatus,
-        status: c.status as ClaimStatus,
-        createdAt: c.created_at,
-        updatedAt: c.updated_at
-      };
-
-      // Masking logic for LOJA role
-      if (currentUser.role === Role.LOJA) {
-        claim.customerPhone = claim.customerPhone.replace(/(\d{2})(\d{5})(\d{4})/, '($1) *****-$3');
-        claim.customerEmail = '***@***.com';
-      }
-      return claim;
-    });
   },
+  claims: {
+    createPublic: async (data: any) => {
+      const { data: newClaim, error } = await supabase
+        .from('warranty_claims')
+        .insert([{
+          protocol_number: `HB-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`,
+          status: ClaimStatus.RECEBIDO,
+          link_status: LinkStatus.PENDING_REVIEW,
+          customer_name: data.customerName,
+          customer_phone: data.customerPhone,
+          customer_email: data.customerEmail,
+          item_type: data.itemType,
+          product_description: data.productDescription,
+          serial_number: data.serialNumber,
+          invoice_number: data.invoiceNumber,
+          purchase_date: data.purchaseDate,
+          purchase_store_name: data.purchaseStoreName,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      return {
+        id: newClaim.id,
+        protocolNumber: newClaim.protocol_number,
+        customerName: newClaim.customer_name,
+        customerPhone: newClaim.customer_phone,
+        customerEmail: newClaim.customer_email,
+        itemType: newClaim.item_type,
+        productDescription: newClaim.product_description,
+        serialNumber: newClaim.serial_number,
+        invoiceNumber: newClaim.invoice_number,
+        purchaseDate: newClaim.purchase_date,
+        purchaseStoreName: newClaim.purchase_store_name,
+        storeId: newClaim.store_id,
+        linkStatus: newClaim.link_status as LinkStatus,
+        status: newClaim.status as ClaimStatus,
+        createdAt: newClaim.created_at,
+        updatedAt: newClaim.updated_at
+      } as WarrantyClaim;
+    },
+    list: async () => {
+      const currentUser = getStoredUser();
+      if (!currentUser) throw new Error('Unauthorized');
+
+      let query = supabase.from('warranty_claims').select('*');
+
+      if (currentUser.role === Role.LOJA) {
+        query = query.eq('store_id', currentUser.storeId);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      return data.map((c: any) => {
+        const claim: WarrantyClaim = {
+          id: c.id,
+          protocolNumber: c.protocol_number,
+          customerName: c.customer_name,
+          customerPhone: c.customer_phone,
+          customerEmail: c.customer_email,
+          itemType: c.item_type,
+          productDescription: c.product_description,
+          serialNumber: c.serial_number,
+          invoiceNumber: c.invoice_number,
+          purchaseDate: c.purchase_date,
+          purchaseStoreName: c.purchase_store_name,
+          storeId: c.store_id,
+          linkStatus: c.link_status as LinkStatus,
+          status: c.status as ClaimStatus,
+          createdAt: c.created_at,
+          updatedAt: c.updated_at
+        };
+
+        if (currentUser.role === Role.LOJA) {
+          claim.customerPhone = claim.customerPhone.replace(/(\d{2})(\d{5})(\d{4})/, '($1) *****-$3');
+          claim.customerEmail = '***@***.com';
+        }
+        return claim;
+      });
+    },
     getById: async (id: string) => {
       const currentUser = getStoredUser();
 
@@ -386,126 +390,124 @@ const RemoteApi = {
         updatedAt: c.updated_at
       } as WarrantyClaim;
     },
-      getByProtocol: async (protocol: string) => {
-        const { data: c, error } = await supabase
-          .from('warranty_claims')
-          .select('*')
-          .eq('protocol_number', protocol)
-          .single();
+    getByProtocol: async (protocol: string) => {
+      const { data: c, error } = await supabase
+        .from('warranty_claims')
+        .select('*')
+        .eq('protocol_number', protocol)
+        .single();
 
-        if (error || !c) return null;
+      if (error || !c) return null;
 
-        return {
-          id: c.id,
-          protocolNumber: c.protocol_number,
-          customerName: c.customer_name,
-          customerPhone: c.customer_phone,
-          customerEmail: c.customer_email,
-          itemType: c.item_type,
-          productDescription: c.product_description,
-          serialNumber: c.serial_number,
-          invoiceNumber: c.invoice_number,
-          purchaseDate: c.purchase_date,
-          purchaseStoreName: c.purchase_store_name,
-          storeId: c.store_id,
-          linkStatus: c.link_status as LinkStatus,
-          status: c.status as ClaimStatus,
-          createdAt: c.created_at,
-          updatedAt: c.updated_at
-        } as WarrantyClaim;
-      },
-        updateStatus: async (id: string, newStatus: ClaimStatus, comment: string) => {
-          const currentUser = getStoredUser();
-
-          // 1. Get current status for history
-          const { data: currentClaim } = await supabase.from('warranty_claims').select('status').eq('id', id).single();
-          const oldStatus = currentClaim?.status;
-
-          // 2. Update Claim
-          const { data: updated, error } = await supabase
-            .from('warranty_claims')
-            .update({
-              status: newStatus,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', id)
-            .select()
-            .single();
-
-          if (error) throw error;
-
-          // 3. Create Event
-          await supabase.from('warranty_events').insert([{
-            claim_id: id,
-            event_type: 'STATUS_CHANGE',
-            from_status: oldStatus,
-            to_status: newStatus,
-            comment: comment,
-            created_by_user_name: currentUser?.name || 'Unknown',
-            created_at: new Date().toISOString()
-          }]);
-
-          return {
-            id: updated.id,
-            // ... map other fields if needed for return, usually just need confirmation
-            status: updated.status as ClaimStatus,
-            updatedAt: updated.updated_at
-          } as any;
-        },
-          getHistory: async (id: string) => {
-            const { data, error } = await supabase
-              .from('warranty_events')
-              .select('*')
-              .eq('claim_id', id)
-              .order('created_at', { ascending: true });
-
-            if (error) throw error;
-
-            return data.map((e: any) => ({
-              id: e.id,
-              claimId: e.claim_id,
-              eventType: e.event_type,
-              fromStatus: e.from_status as ClaimStatus,
-              toStatus: e.to_status as ClaimStatus,
-              comment: e.comment,
-              createdAt: e.created_at,
-              createdByUserName: e.created_by_user_name
-            } as WarrantyEvent));
-          }
+      return {
+        id: c.id,
+        protocolNumber: c.protocol_number,
+        customerName: c.customer_name,
+        customerPhone: c.customer_phone,
+        customerEmail: c.customer_email,
+        itemType: c.item_type,
+        productDescription: c.product_description,
+        serialNumber: c.serial_number,
+        invoiceNumber: c.invoice_number,
+        purchaseDate: c.purchase_date,
+        purchaseStoreName: c.purchase_store_name,
+        storeId: c.store_id,
+        linkStatus: c.link_status as LinkStatus,
+        status: c.status as ClaimStatus,
+        createdAt: c.created_at,
+        updatedAt: c.updated_at
+      } as WarrantyClaim;
     },
-stores: {
-  list: async () => {
-    const { data, error } = await supabase.from('stores').select('*');
-    if (error) throw error;
+    updateStatus: async (id: string, newStatus: ClaimStatus, comment: string) => {
+      const currentUser = getStoredUser();
 
-    return data.map((s: any) => ({
-      id: s.id,
-      tradeName: s.trade_name,
-      legalName: s.legal_name,
-      cnpj: s.cnpj,
-      city: s.city,
-      state: s.state,
-      contactName: s.contact_name,
-      contactEmail: s.contact_email,
-      active: s.active,
-      claimsCount: s.claims_count
-    } as Store));
-  }
-},
-users: {
-  list: async () => {
-    const { data, error } = await supabase.from('users').select('*');
-    if (error) throw error;
-    return data.map((u: any) => ({
-      id: u.id,
-      name: u.name,
-      email: u.email,
-      role: u.role as Role,
-      storeId: u.store_id,
-      active: u.active
-    } as User));
+      const { data: currentClaim } = await supabase.from('warranty_claims').select('status').eq('id', id).single();
+      const oldStatus = currentClaim?.status;
+
+      const { data: updated, error } = await supabase
+        .from('warranty_claims')
+        .update({
+          status: newStatus,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      await supabase.from('warranty_events').insert([{
+        claim_id: id,
+        event_type: 'STATUS_CHANGE',
+        from_status: oldStatus,
+        to_status: newStatus,
+        comment: comment,
+        created_by_user_name: currentUser?.name || 'Unknown',
+        created_at: new Date().toISOString()
+      }]);
+
+      return {
+        id: updated.id,
+        status: updated.status as ClaimStatus,
+        updatedAt: updated.updated_at
+      } as any;
+    },
+    getHistory: async (id: string) => {
+      const { data, error } = await supabase
+        .from('warranty_events')
+        .select('*')
+        .eq('claim_id', id)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+
+      return data.map((e: any) => ({
+        id: e.id,
+        claimId: e.claim_id,
+        eventType: e.event_type,
+        fromStatus: e.from_status as ClaimStatus,
+        toStatus: e.to_status as ClaimStatus,
+        comment: e.comment,
+        createdAt: e.created_at,
+        createdByUserName: e.created_by_user_name
+      } as WarrantyEvent));
+    }
   },
+  stores: {
+    list: async () => {
+      const { data, error } = await supabase.from('stores').select('*');
+      if (error) throw error;
+
+      return data.map((s: any) => ({
+        id: s.id,
+        tradeName: s.trade_name,
+        legalName: s.legal_name,
+        cnpj: s.cnpj,
+        city: s.city,
+        state: s.state,
+        contactName: s.contact_name,
+        contactEmail: s.contact_email,
+        active: s.active,
+        claimsCount: s.claims_count
+      } as Store));
+    }
+  },
+  users: {
+    list: async () => {
+      const { data, error } = await supabase.from('users').select('*');
+      if (error) throw error;
+      return data.map((u: any) => ({
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        role: u.role as Role,
+        storeId: u.store_id,
+        active: u.active
+      } as User));
+    },
     create: async (userData: Omit<User, 'id'>) => {
+      // Note: This only creates in public table, not Auth. 
+      // Admin should use Supabase Dashboard or Admin API for real user creation.
       const { data, error } = await supabase.from('users').insert([{
         name: userData.name,
         email: userData.email,
@@ -524,30 +526,29 @@ users: {
         active: data.active
       } as User;
     },
-      toggleStatus: async (id: string) => {
-        // First get current
-        const { data: current } = await supabase.from('users').select('active').eq('id', id).single();
+    toggleStatus: async (id: string) => {
+      const { data: current } = await supabase.from('users').select('active').eq('id', id).single();
 
-        const { data, error } = await supabase
-          .from('users')
-          .update({ active: !current?.active })
-          .eq('id', id)
-          .select()
-          .single();
+      const { data, error } = await supabase
+        .from('users')
+        .update({ active: !current?.active })
+        .eq('id', id)
+        .select()
+        .single();
 
-        if (error) throw error;
+      if (error) throw error;
 
-        return {
-          id: data.id,
-          name: data.name,
-          email: data.email,
-          role: data.role as Role,
-          storeId: data.store_id,
-          active: data.active
-        } as User;
-      }
-}
-  };
+      return {
+        id: data.id,
+        name: data.name,
+        email: data.email,
+        role: data.role as Role,
+        storeId: data.store_id,
+        active: data.active
+      } as User;
+    }
+  }
+};
 
 // --- EXPORT ---
 // In a real build, use: import.meta.env.VITE_USE_MOCK === 'true'
