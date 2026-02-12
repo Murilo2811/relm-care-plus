@@ -193,6 +193,9 @@ const MockApi = {
   stores: {
     list: async () => {
       return [...mockStores];
+    },
+    getById: async (id: string) => {
+      return mockStores.find(s => s.id === id) || null;
     }
   },
   users: {
@@ -204,6 +207,16 @@ const MockApi = {
       mockUsers.push(newUser);
       return newUser;
     },
+
+    update: async (id: string, user: Partial<User>) => {
+      const index = mockUsers.findIndex(u => u.id === id);
+      if (index >= 0) {
+        mockUsers[index] = { ...mockUsers[index], ...user };
+        return mockUsers[index];
+      }
+      throw new Error('User not found');
+    },
+
     toggleStatus: async (id: string) => {
       const userIndex = mockUsers.findIndex(u => u.id === id);
       if (userIndex >= 0) {
@@ -239,7 +252,7 @@ const RemoteApi = {
 
       // Fetch additional user profile data from public schema
       const { data: userProfile, error: profileError } = await supabase
-        .from('users')
+        .from('profiles')
         .select('*')
         .eq('id', data.user.id)
         .single();
@@ -257,11 +270,11 @@ const RemoteApi = {
 
       const user: User = {
         id: userProfile.id,
-        name: userProfile.name,
-        email: userProfile.email,
+        name: userProfile.full_name,
+        email: data.user.email || '', // Email comes from auth, not necessarily profile
         role: userProfile.role as Role,
         storeId: userProfile.store_id || undefined,
-        active: userProfile.active
+        active: userProfile.is_active
       };
 
       localStorage.setItem(USER_KEY, JSON.stringify(user));
@@ -277,28 +290,28 @@ const RemoteApi = {
   },
   claims: {
     createPublic: async (data: any) => {
-      const { data: newClaim, error } = await supabase
-        .from('warranty_claims')
-        .insert([{
-          protocol_number: `HB-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`,
-          status: ClaimStatus.RECEBIDO,
-          link_status: LinkStatus.PENDING_REVIEW,
-          customer_name: data.customerName,
-          customer_phone: data.customerPhone,
-          customer_email: data.customerEmail,
-          item_type: data.itemType,
-          product_description: data.productDescription,
-          serial_number: data.serialNumber,
-          invoice_number: data.invoiceNumber,
-          purchase_date: data.purchaseDate,
-          purchase_store_name: data.purchaseStoreName,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }])
-        .select()
-        .single();
+      // Prepare payload for RPC function
+      const payload = {
+        protocol_number: `HB-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`,
+        customer_name: data.customerName,
+        customer_phone: data.customerPhone,
+        customer_email: data.customerEmail,
+        item_type: data.itemType,
+        product_description: data.productDescription,
+        serial_number: data.serialNumber,
+        invoice_number: data.invoiceNumber,
+        purchase_date: data.purchaseDate,
+        purchase_store_name: data.purchaseStoreName
+      };
+
+      // Use RPC (Remote Procedure Call) to bypass RLS securely
+      const { data: result, error } = await supabase
+        .rpc('create_public_claim', { claim_data: payload });
 
       if (error) throw error;
+
+      // Access the returned JSON object directly
+      const newClaim = result;
 
       return {
         id: newClaim.id,
@@ -307,7 +320,8 @@ const RemoteApi = {
         customerPhone: newClaim.customer_phone,
         customerEmail: newClaim.customer_email,
         itemType: newClaim.item_type,
-        productDescription: newClaim.product_description,
+        product_description: newClaim.product_description, // Note: DB returns snake_case key if using to_jsonb
+        productDescription: newClaim.product_description, // Fix mapping
         serialNumber: newClaim.serial_number,
         invoiceNumber: newClaim.invoice_number,
         purchaseDate: newClaim.purchase_date,
@@ -490,6 +504,23 @@ const RemoteApi = {
         active: s.active,
         claimsCount: s.claims_count
       } as Store));
+    },
+    getById: async (id: string) => {
+      const { data: s, error } = await supabase.from('stores').select('*').eq('id', id).single();
+      if (error) return null;
+
+      return {
+        id: s.id,
+        tradeName: s.trade_name,
+        legalName: s.legal_name,
+        cnpj: s.cnpj,
+        city: s.city,
+        state: s.state,
+        contactName: s.contact_name,
+        contactEmail: s.contact_email,
+        active: s.active,
+        claimsCount: s.claims_count
+      } as Store;
     }
   },
   users: {
@@ -505,26 +536,56 @@ const RemoteApi = {
         active: u.active
       } as User));
     },
-    create: async (userData: Omit<User, 'id'>) => {
-      // Note: This only creates in public table, not Auth. 
-      // Admin should use Supabase Dashboard or Admin API for real user creation.
-      const { data, error } = await supabase.from('users').insert([{
-        name: userData.name,
-        email: userData.email,
-        role: userData.role,
-        store_id: userData.storeId,
-        active: userData.active
-      }]).select().single();
+    create: async (user: Omit<User, 'id'>) => {
+      if (USE_MOCK) {
+        const newUser = { ...user, id: String(mockUsers.length + 1) };
+        mockUsers.push(newUser);
+        return newUser;
+      }
+
+      const { data, error } = await supabase.functions.invoke('admin-user-actions', {
+        body: {
+          action: 'create',
+          userData: {
+            email: user.email,
+            password: 'password123', // Default password, user should change it
+            name: user.name,
+            role: user.role,
+            storeId: user.storeId,
+            active: user.active
+          }
+        }
+      });
 
       if (error) throw error;
-      return {
-        id: data.id,
-        name: data.name,
-        email: data.email,
-        role: data.role as Role,
-        storeId: data.store_id,
-        active: data.active
-      } as User;
+      return data.user;
+    },
+    update: async (id: string, user: Partial<User>) => {
+      if (USE_MOCK) {
+        const index = mockUsers.findIndex(u => u.id === id);
+        if (index >= 0) {
+          mockUsers[index] = { ...mockUsers[index], ...user };
+          return mockUsers[index];
+        }
+        throw new Error('User not found');
+      }
+
+      const { data, error } = await supabase.functions.invoke('admin-user-actions', {
+        body: {
+          action: 'update',
+          userId: id,
+          userData: {
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            storeId: user.storeId,
+            active: user.active
+          }
+        }
+      });
+
+      if (error) throw error;
+      return data;
     },
     toggleStatus: async (id: string) => {
       const { data: current } = await supabase.from('users').select('active').eq('id', id).single();

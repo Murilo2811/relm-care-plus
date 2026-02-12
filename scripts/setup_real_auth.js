@@ -1,8 +1,15 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Configuração hardcoded (Service Key para Admin API)
-const supabaseUrl = 'https://tgfcwkfolmyaawscfovu.supabase.co';
-const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRnZmN3a2ZvbG15YWF3c2Nmb3Z1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MDg4OTI1MywiZXhwIjoyMDg2NDY1MjUzfQ.Ta4Id8fE9n2tK6LLsBSWC6ZzKzBSggKDYO8xkTl4B_w';
+import dotenv from 'dotenv';
+dotenv.config();
+
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY; // Need to ensure this is set or passed
+
+if (!supabaseUrl || !supabaseServiceKey) {
+    console.error('❌ Missing Env Vars: VITE_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
+    process.exit(1);
+}
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey, {
     auth: {
@@ -53,8 +60,8 @@ async function seedAuth() {
         }
 
         if (userId) {
-            // 3. Inserir na tabela pública 'users' vinculando o ID
-            const { error: publicError } = await supabase.from('users').upsert({
+            // 3. Inserir na tabela pública 'profiles' vinculando o ID
+            const { error: publicError } = await supabase.from('profiles').upsert({
                 id: userId, // VINCULO CRÍTICO: ID da tabela pública = ID do Auth
                 email: u.email,
                 name: u.name,

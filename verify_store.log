@@ -1,0 +1,17 @@
+[dotenv@17.2.4] injecting env (3) from .env -- tip: ÔÜÖ´©Å  override existing env vars with { override: true }
+--- STORE TEST START ---
+1. Logging in as Store User (loja@bikepoint.com)...
+Ô£à Login Success. User ID: ff102911-b7f1-4139-ac6b-663e4804a724
+
+2. Fetching Profile...
+Ô£à Profile Found: { role: 'loja', store_id: null }
+ÔÜá´©Å WARNING: store_id is NULL. This user wont see any data.
+
+3. Fetching Warranty Claims...
+Ô£à Claims Visible: 1
+ÔöîÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö¼ÔöÇÔöÇÔöÇÔöÇÔöÇÔö¼ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÉ
+Ôöé (index) Ôöé id  Ôöé store_id  Ôöé
+Ôö£ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔö╝ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöñ
+Ôöé 0       Ôöé '1' Ôöé 'store-1' Ôöé
+ÔööÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔö┤ÔöÇÔöÇÔöÇÔöÇÔöÇÔö┤ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÿ
+--- STORE TEST END ---

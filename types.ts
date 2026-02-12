@@ -1,7 +1,7 @@
 export enum Role {
-  ADMIN_RELM = 'ADMIN_RELM',
-  GERENTE_RELM = 'GERENTE_RELM',
-  LOJA = 'LOJA',
+  ADMIN_RELM = 'admin_relm',
+  GERENTE_RELM = 'gerente_relm',
+  LOJA = 'loja',
 }
 
 export enum ClaimStatus {

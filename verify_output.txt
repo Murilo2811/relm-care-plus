@@ -1,0 +1,19 @@
+[dotenv@17.2.4] injecting env (3) from .env -- tip: ­ƒùé´©Å backup and recover secrets: https://dotenvx.com/ops
+­ƒöì Starting Backend Verification...
+
+1´©ÅÔâú  Testing Admin Login...
+   Ô£à Login Success: admin@relmcare.com
+
+2´©ÅÔâú  Testing Profile Fetch (public.profiles)...
+   Ô£à Profile Found: Administrador Relm (admin_relm)
+
+3´©ÅÔâú  Testing Warranty Claims Access (RLS)...
+   Ô£à Claims Fetched: 3 items
+   -> Sample: {
+  id: '9f5a89c0-e4ed-4597-8195-a2e9e1926d22',
+  status: 'recebido',
+  customer_name: 'murillo'
+}
+
+4´©ÅÔâú  Testing Edge Function (admin-user-actions)...
+   ÔØî Function Call Failed: Edge Function returned a non-2xx status code
