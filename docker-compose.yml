@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    restart: always
+    ports:
+      - "3001:3001"
+    environment:
+      # DATABASE_URL e DIRECT_URL devem ser definidos no arquivo .env
+      # Não definimos valores default aqui para segurança
+      JWT_SECRET: dev_secret
+      PORT: 3001
+    networks:
+      - relm-network
+
+  frontend:
+    build: ./frontend
+    restart: always
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - relm-network
+
+networks:
+  relm-network:

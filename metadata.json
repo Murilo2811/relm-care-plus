@@ -1,0 +1,5 @@
+{
+  "name": "Relm Care+",
+  "description": "Official warranty management system for Relm Bikes. Features public registration, RBAC (Admin/Store) dashboard, and status workflow automation.",
+  "requestFramePermissions": []
+}

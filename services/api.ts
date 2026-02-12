@@ -1,0 +1,549 @@
+import { ClaimStatus, LinkStatus, Role, User, WarrantyClaim, WarrantyEvent, Store } from '../types';
+
+const API_URL = 'http://localhost:3001';
+const USE_MOCK = true; // Set to false to use the Real Backend
+
+// --- HELPER: Local Storage for Session Persistence ---
+const STORAGE_KEY = 'relm_token';
+const USER_KEY = 'relm_user';
+
+const getStoredToken = () => localStorage.getItem(STORAGE_KEY);
+const getStoredUser = (): User | null => {
+  const u = localStorage.getItem(USER_KEY);
+  return u ? JSON.parse(u) : null;
+};
+
+// --- MOCK DATA (Fallback/Demo Mode) ---
+let mockClaims: WarrantyClaim[] = [
+  {
+    id: '1',
+    protocolNumber: 'HB-20231025-1001',
+    customerName: 'João Silva',
+    customerPhone: '11999998888',
+    customerEmail: 'joao@email.com',
+    itemType: 'Bike',
+    productDescription: 'Mountain Bike XC 900',
+    serialNumber: 'RELM-XC9-123456',
+    invoiceNumber: '000.123.456',
+    purchaseDate: '2023-01-15',
+    purchaseStoreName: 'Bike Point SP',
+    storeId: 'store-1',
+    linkStatus: LinkStatus.LINKED_AUTO,
+    status: ClaimStatus.EM_ANALISE,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    id: '2',
+    protocolNumber: 'HB-20231026-1002',
+    customerName: 'Maria Oliveira',
+    customerPhone: '21988887777',
+    customerEmail: 'maria@email.com',
+    itemType: 'Acessório',
+    productDescription: 'Capacete Aero',
+    serialNumber: 'RELM-ACC-999',
+    invoiceNumber: '000.987.654',
+    purchaseStoreName: 'Loja Desconhecida',
+    linkStatus: LinkStatus.PENDING_REVIEW,
+    status: ClaimStatus.RECEBIDO,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  }
+];
+
+let mockEvents: WarrantyEvent[] = [
+  {
+    id: 'e1',
+    claimId: '1',
+    eventType: 'STATUS_CHANGE',
+    fromStatus: ClaimStatus.RECEBIDO,
+    toStatus: ClaimStatus.EM_ANALISE,
+    comment: 'Iniciando análise técnica',
+    createdAt: new Date().toISOString(),
+    createdByUserName: 'Técnico Relm'
+  }
+];
+
+let mockStores: Store[] = [
+  {
+    id: 'store-1',
+    tradeName: 'Bike Point SP',
+    legalName: 'Bike Point Comércio de Bicicletas LTDA',
+    cnpj: '12.345.678/0001-90',
+    city: 'São Paulo',
+    state: 'SP',
+    contactName: 'Carlos Gerente',
+    contactEmail: 'loja@bikepoint.com',
+    active: true,
+    claimsCount: 12
+  },
+  {
+    id: 'store-2',
+    tradeName: 'Pedal Power Sul',
+    legalName: 'Pedal Power Comércio LTDA',
+    cnpj: '98.765.432/0001-10',
+    city: 'Curitiba',
+    state: 'PR',
+    contactName: 'Ana Souza',
+    contactEmail: 'contato@pedalpower.com.br',
+    active: true,
+    claimsCount: 5
+  }
+];
+
+const MOCK_ADMIN: User = { id: 'u1', name: 'Admin Relm', email: 'admin@relm.com', role: Role.ADMIN_RELM, active: true };
+const MOCK_STORE: User = { id: 'u2', name: 'Gerente Loja', email: 'loja@bikepoint.com', role: Role.LOJA, storeId: 'store-1', active: true };
+let mockUsers: User[] = [MOCK_ADMIN, MOCK_STORE];
+
+
+// --- IMPLEMENTATION 1: MOCK API (Client-Side Logic) ---
+const MockApi = {
+  auth: {
+    login: async (email: string, pass: string) => {
+      const foundUser = mockUsers.find(u => u.email === email);
+      let user = foundUser;
+
+      if (!foundUser) {
+        if (email.includes('admin')) user = MOCK_ADMIN;
+        else if (email.includes('loja')) user = MOCK_STORE;
+        else throw new Error('Credenciais inválidas');
+      }
+
+      if (user && !user.active) throw new Error('Usuário inativo.');
+
+      // Simulate Session
+      localStorage.setItem(USER_KEY, JSON.stringify(user));
+      localStorage.setItem(STORAGE_KEY, 'mock-jwt-token');
+      return user!;
+    },
+    logout: async () => {
+      localStorage.removeItem(USER_KEY);
+      localStorage.removeItem(STORAGE_KEY);
+    },
+    getCurrentUser: () => getStoredUser()
+  },
+  claims: {
+    createPublic: async (data: any) => {
+      const newClaim: WarrantyClaim = {
+        id: Math.random().toString(36).substr(2, 9),
+        protocolNumber: `HB-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`,
+        status: ClaimStatus.RECEBIDO,
+        linkStatus: LinkStatus.PENDING_REVIEW,
+        storeId: undefined,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        ...data
+      };
+      mockClaims.push(newClaim);
+      return newClaim;
+    },
+    list: async () => {
+      const currentUser = getStoredUser();
+      if (!currentUser) throw new Error('Unauthorized');
+
+      let result = [...mockClaims];
+
+      if (currentUser.role === Role.LOJA) {
+        result = result.filter(c => c.storeId === currentUser.storeId);
+        result = result.map(c => ({
+          ...c,
+          customerPhone: c.customerPhone.replace(/(\d{2})(\d{5})(\d{4})/, '($1) *****-$3'),
+          customerEmail: '***@***.com'
+        }));
+      }
+      return result;
+    },
+    getById: async (id: string) => {
+      const currentUser = getStoredUser();
+      const claim = mockClaims.find(c => c.id === id);
+      if (currentUser?.role === Role.LOJA && claim?.storeId !== currentUser.storeId) return null;
+      return claim;
+    },
+    getByProtocol: async (protocol: string) => {
+      const claim = mockClaims.find(c => c.protocolNumber === protocol);
+      return claim || null;
+    },
+    updateStatus: async (id: string, newStatus: ClaimStatus, comment: string) => {
+      const currentUser = getStoredUser();
+      const claim = mockClaims.find(c => c.id === id);
+      if (!claim) throw new Error('Not found');
+
+      const oldStatus = claim.status;
+      claim.status = newStatus;
+      claim.updatedAt = new Date().toISOString();
+
+      const event: WarrantyEvent = {
+        id: Math.random().toString(),
+        claimId: id,
+        eventType: 'STATUS_CHANGE',
+        fromStatus: oldStatus,
+        toStatus: newStatus,
+        comment,
+        createdAt: new Date().toISOString(),
+        createdByUserName: currentUser?.name || 'Unknown'
+      };
+      mockEvents.push(event);
+      return claim;
+    },
+    getHistory: async (id: string) => {
+      return mockEvents.filter(e => e.claimId === id);
+    }
+  },
+  stores: {
+    list: async () => {
+      return [...mockStores];
+    }
+  },
+  users: {
+    list: async () => {
+      return [...mockUsers];
+    },
+    create: async (userData: Omit<User, 'id'>) => {
+      const newUser: User = { id: Math.random().toString(36).substr(2, 9), ...userData };
+      mockUsers.push(newUser);
+      return newUser;
+    },
+    toggleStatus: async (id: string) => {
+      const userIndex = mockUsers.findIndex(u => u.id === id);
+      if (userIndex >= 0) {
+        mockUsers[userIndex].active = !mockUsers[userIndex].active;
+        return mockUsers[userIndex];
+      }
+      throw new Error('User not found');
+    }
+  }
+};
+
+
+// --- IMPLEMENTATION 2: SUPABASE CLIENT (Real Backend Connection) ---
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+let supabase: SupabaseClient;
+
+if (!USE_MOCK && supabaseUrl && supabaseKey) {
+  supabase = createClient(supabaseUrl, supabaseKey);
+}
+
+const RemoteApi = {
+  auth: {
+    login: async (email: string, pass: string) => {
+      // For now, simpler login logic or future Supabase Auth
+      // As per migration plan, we seeded users but didn't set up Supabase Auth fully yet.
+      // We will simulate login by querying the 'users' table directly for now.
+
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', email)
+        .single();
+
+      if (error || !data) {
+        throw new Error('Credenciais inválidas ou usuário não encontrado.');
+      }
+
+      if (!data.active) throw new Error('Usuário inativo.');
+
+      // Simulate session
+      const user: User = {
+        id: data.id,
+        name: data.name,
+        email: data.email,
+        role: data.role as Role,
+        storeId: data.store_id || undefined,
+        active: data.active
+      };
+
+      localStorage.setItem(USER_KEY, JSON.stringify(user));
+      localStorage.setItem(STORAGE_KEY, 'mock-jwt-token-db'); // Placeholder until full Auth
+      return user;
+    },
+    logout: async () => {
+      localStorage.removeItem(USER_KEY);
+      localStorage.removeItem(STORAGE_KEY);
+      // await supabase.auth.signOut();
+    },
+    getCurrentUser: () => getStoredUser()
+  },
+  claims: {
+    createPublic: async (data: any) => {
+      const { data: newClaim, error } = await supabase
+        .from('warranty_claims')
+        .insert([{
+          protocol_number: `HB-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`,
+          status: ClaimStatus.RECEBIDO,
+          link_status: LinkStatus.PENDING_REVIEW,
+          customer_name: data.customerName,
+          customer_phone: data.customerPhone,
+          customer_email: data.customerEmail,
+          item_type: data.itemType,
+          product_description: data.productDescription,
+          serial_number: data.serialNumber,
+          invoice_number: data.invoiceNumber,
+          purchase_date: data.purchaseDate,
+          purchase_store_name: data.purchaseStoreName,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      return {
+        id: newClaim.id,
+        protocolNumber: newClaim.protocol_number,
+        customerName: newClaim.customer_name,
+        customerPhone: newClaim.customer_phone,
+        customerEmail: newClaim.customer_email,
+        itemType: newClaim.item_type,
+        productDescription: newClaim.product_description,
+        serialNumber: newClaim.serial_number,
+        invoiceNumber: newClaim.invoice_number,
+        purchaseDate: newClaim.purchase_date,
+        purchaseStoreName: newClaim.purchase_store_name,
+        storeId: newClaim.store_id,
+        linkStatus: newClaim.link_status as LinkStatus,
+        status: newClaim.status as ClaimStatus,
+        createdAt: newClaim.created_at,
+        updatedAt: newClaim.updated_at
+      } as WarrantyClaim;
+    },
+    list: async () => {
+      const currentUser = getStoredUser();
+      if (!currentUser) throw new Error('Unauthorized');
+
+      let query = supabase.from('warranty_claims').select('*');
+
+      if (currentUser.role === Role.LOJA) {
+        query = query.eq('store_id', currentUser.storeId);
+      }
+
+      const { data, error } = await query;
+      if (error) throw error;
+
+      return data.map((c: any) => {
+        const claim: WarrantyClaim = {
+          id: c.id,
+          protocolNumber: c.protocol_number,
+          customerName: c.customer_name,
+          customerPhone: c.customer_phone,
+          customerEmail: c.customer_email,
+          itemType: c.item_type,
+          productDescription: c.product_description,
+          serialNumber: c.serial_number,
+          invoiceNumber: c.invoice_number,
+          purchaseDate: c.purchase_date,
+          purchaseStoreName: c.purchase_store_name,
+          storeId: c.store_id,
+          linkStatus: c.link_status as LinkStatus,
+          status: c.status as ClaimStatus,
+          createdAt: c.created_at,
+          updatedAt: c.updated_at
+        };
+
+        // Masking logic for LOJA role
+        if (currentUser.role === Role.LOJA) {
+          claim.customerPhone = claim.customerPhone.replace(/(\d{2})(\d{5})(\d{4})/, '($1) *****-$3');
+          claim.customerEmail = '***@***.com';
+        }
+        return claim;
+      });
+    },
+    getById: async (id: string) => {
+      const currentUser = getStoredUser();
+
+      const { data: c, error } = await supabase
+        .from('warranty_claims')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+      if (error) return null;
+      if (currentUser?.role === Role.LOJA && c.store_id !== currentUser.storeId) return null;
+
+      return {
+        id: c.id,
+        protocolNumber: c.protocol_number,
+        customerName: c.customer_name,
+        customerPhone: c.customer_phone,
+        customerEmail: c.customer_email,
+        itemType: c.item_type,
+        productDescription: c.product_description,
+        serialNumber: c.serial_number,
+        invoiceNumber: c.invoice_number,
+        purchaseDate: c.purchase_date,
+        purchaseStoreName: c.purchase_store_name,
+        storeId: c.store_id,
+        linkStatus: c.link_status as LinkStatus,
+        status: c.status as ClaimStatus,
+        createdAt: c.created_at,
+        updatedAt: c.updated_at
+      } as WarrantyClaim;
+    },
+    getByProtocol: async (protocol: string) => {
+      const { data: c, error } = await supabase
+        .from('warranty_claims')
+        .select('*')
+        .eq('protocol_number', protocol)
+        .single();
+
+      if (error || !c) return null;
+
+      return {
+        id: c.id,
+        protocolNumber: c.protocol_number,
+        customerName: c.customer_name,
+        customerPhone: c.customer_phone,
+        customerEmail: c.customer_email,
+        itemType: c.item_type,
+        productDescription: c.product_description,
+        serialNumber: c.serial_number,
+        invoiceNumber: c.invoice_number,
+        purchaseDate: c.purchase_date,
+        purchaseStoreName: c.purchase_store_name,
+        storeId: c.store_id,
+        linkStatus: c.link_status as LinkStatus,
+        status: c.status as ClaimStatus,
+        createdAt: c.created_at,
+        updatedAt: c.updated_at
+      } as WarrantyClaim;
+    },
+    updateStatus: async (id: string, newStatus: ClaimStatus, comment: string) => {
+      const currentUser = getStoredUser();
+
+      // 1. Get current status for history
+      const { data: currentClaim } = await supabase.from('warranty_claims').select('status').eq('id', id).single();
+      const oldStatus = currentClaim?.status;
+
+      // 2. Update Claim
+      const { data: updated, error } = await supabase
+        .from('warranty_claims')
+        .update({
+          status: newStatus,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // 3. Create Event
+      await supabase.from('warranty_events').insert([{
+        claim_id: id,
+        event_type: 'STATUS_CHANGE',
+        from_status: oldStatus,
+        to_status: newStatus,
+        comment: comment,
+        created_by_user_name: currentUser?.name || 'Unknown',
+        created_at: new Date().toISOString()
+      }]);
+
+      return {
+        id: updated.id,
+        // ... map other fields if needed for return, usually just need confirmation
+        status: updated.status as ClaimStatus,
+        updatedAt: updated.updated_at
+      } as any;
+    },
+    getHistory: async (id: string) => {
+      const { data, error } = await supabase
+        .from('warranty_events')
+        .select('*')
+        .eq('claim_id', id)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+
+      return data.map((e: any) => ({
+        id: e.id,
+        claimId: e.claim_id,
+        eventType: e.event_type,
+        fromStatus: e.from_status as ClaimStatus,
+        toStatus: e.to_status as ClaimStatus,
+        comment: e.comment,
+        createdAt: e.created_at,
+        createdByUserName: e.created_by_user_name
+      } as WarrantyEvent));
+    }
+  },
+  stores: {
+    list: async () => {
+      const { data, error } = await supabase.from('stores').select('*');
+      if (error) throw error;
+
+      return data.map((s: any) => ({
+        id: s.id,
+        tradeName: s.trade_name,
+        legalName: s.legal_name,
+        cnpj: s.cnpj,
+        city: s.city,
+        state: s.state,
+        contactName: s.contact_name,
+        contactEmail: s.contact_email,
+        active: s.active,
+        claimsCount: s.claims_count
+      } as Store));
+    }
+  },
+  users: {
+    list: async () => {
+      const { data, error } = await supabase.from('users').select('*');
+      if (error) throw error;
+      return data.map((u: any) => ({
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        role: u.role as Role,
+        storeId: u.store_id,
+        active: u.active
+      } as User));
+    },
+    create: async (userData: Omit<User, 'id'>) => {
+      const { data, error } = await supabase.from('users').insert([{
+        name: userData.name,
+        email: userData.email,
+        role: userData.role,
+        store_id: userData.storeId,
+        active: userData.active
+      }]).select().single();
+
+      if (error) throw error;
+      return {
+        id: data.id,
+        name: data.name,
+        email: data.email,
+        role: data.role as Role,
+        storeId: data.store_id,
+        active: data.active
+      } as User;
+    },
+    toggleStatus: async (id: string) => {
+      // First get current
+      const { data: current } = await supabase.from('users').select('active').eq('id', id).single();
+
+      const { data, error } = await supabase
+        .from('users')
+        .update({ active: !current?.active })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      return {
+        id: data.id,
+        name: data.name,
+        email: data.email,
+        role: data.role as Role,
+        storeId: data.store_id,
+        active: data.active
+      } as User;
+    }
+  }
+};
+
+// --- EXPORT ---
+// In a real build, use: import.meta.env.VITE_USE_MOCK === 'true'
+export const api = USE_MOCK ? MockApi : RemoteApi;
