@@ -30,34 +30,32 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     }
   };
 
-
-
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-white flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <Link to="/" className="flex justify-center items-center mb-6 text-gray-500 hover:text-gray-700 transition-colors group">
+        <Link to="/" className="flex justify-center items-center mb-6 text-gray-400 hover:text-black transition-colors group text-[10px] font-bold uppercase tracking-[0.2em]">
           <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" /> Voltar ao início
         </Link>
         <div className="text-center">
-          <h2 className="text-3xl font-bold italic tracking-tighter text-red-600">
-            RELM <span className="text-black not-italic font-normal">CARE+</span>
+          <h2 className="text-3xl font-black italic tracking-tighter text-black uppercase">
+            RELM <span className="text-gray-400 not-italic font-normal">CARE+</span>
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <p className="mt-2 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">
             Acesso administrativo e parceiros
           </p>
         </div>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow-xl shadow-gray-200/50 sm:rounded-xl sm:px-10 border border-gray-100">
+        <div className="bg-white py-8 px-4 shadow-lg sm:px-10 border border-gray-100">
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="email" className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">
                 Email Corporativo
               </label>
               <div className="mt-1 relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
+                  <Mail className="h-5 w-5 text-gray-300" />
                 </div>
                 <input
                   id="email"
@@ -67,19 +65,19 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm transition-all"
+                  className="appearance-none block w-full pl-10 pr-3 py-3 border-b border-gray-200 focus:border-black placeholder-gray-300 focus:outline-none sm:text-sm transition-all bg-white rounded-none"
                   placeholder="seu@email.com"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">
                 Senha
               </label>
               <div className="mt-1 relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-gray-400" />
+                  <Lock className="h-5 w-5 text-gray-300" />
                 </div>
                 <input
                   id="password"
@@ -89,14 +87,14 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 sm:text-sm transition-all"
+                  className="appearance-none block w-full pl-10 pr-3 py-3 border-b border-gray-200 focus:border-black placeholder-gray-300 focus:outline-none sm:text-sm transition-all bg-white rounded-none"
                   placeholder="••••••••"
                 />
               </div>
             </div>
 
             {error && (
-              <div className="rounded-md bg-red-50 p-4 flex items-start animate-fade-in">
+              <div className="bg-red-50 p-4 flex items-start border-l-2 border-red-500">
                 <AlertCircle className="w-5 h-5 text-red-400 mt-0.5 mr-3 flex-shrink-0" />
                 <p className="text-sm text-red-700">{error}</p>
               </div>
@@ -106,7 +104,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full flex justify-center py-4 px-4 bg-black text-white text-sm font-bold uppercase tracking-[0.2em] hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black disabled:opacity-50 disabled:cursor-not-allowed transition-colors rounded-none"
               >
                 {loading ? (
                   <span className="flex items-center">
@@ -124,10 +122,8 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               </button>
             </div>
           </form>
-
-
         </div>
-        <p className="text-center text-xs text-gray-400 mt-8">
+        <p className="text-center text-[10px] font-bold uppercase tracking-widest text-gray-300 mt-8">
           &copy; 2024 Relm Bikes. Todos os direitos reservados.
         </p>
       </div>

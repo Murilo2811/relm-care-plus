@@ -1,95 +1,92 @@
 import React, { useEffect, useState } from 'react';
+import { WarrantyClaim, User, ClaimStatus } from '../types';
 import { api } from '../services/api';
-import { Claim, User } from '../types';
 import { ClaimsVolumeChart } from '../components/reports/ClaimsVolumeChart';
 import { StatusDistributionChart } from '../components/reports/StatusDistributionChart';
-import { FileText, Download, RefreshCw } from 'lucide-react';
+import { BarChart3, Download, ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
 
 interface ReportsProps {
     user: User;
 }
 
 const Reports: React.FC<ReportsProps> = ({ user }) => {
-    const [claims, setClaims] = useState<Claim[]>([]);
+    const [claims, setClaims] = useState<WarrantyClaim[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const fetchData = async () => {
-        setLoading(true);
-        try {
-            // In a real scenario with thousands of records, we would use a specific aggregation API
-            // For now, we fetch all claims and aggregate client-side as per plan.
-            const data = await api.claims.list();
-            setClaims(data);
-        } catch (error) {
-            console.error('Failed to fetch report data', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     useEffect(() => {
-        fetchData();
+        const load = async () => {
+            try {
+                const data = await api.claims.list();
+                setClaims(data);
+            } catch (e) { console.error(e); }
+            setLoading(false);
+        };
+        load();
     }, []);
 
-    const metrics = {
-        total: claims.length,
-        pending: claims.filter(c => c.status === 'pending').length,
-        approved: claims.filter(c => c.status === 'approved').length,
-        approvalRate: claims.length > 0
-            ? Math.round((claims.filter(c => c.status === 'approved').length / claims.length) * 100)
-            : 0
-    };
+    const total = claims.length;
+    const approved = claims.filter(c => c.status === ClaimStatus.APROVADO).length;
+    const rejected = claims.filter(c => c.status === ClaimStatus.REPROVADO).length;
+    const pending = claims.filter(c => c.status === ClaimStatus.EM_ANALISE || c.status === ClaimStatus.RECEBIDO).length;
+    const rate = total > 0 ? Math.round((approved / total) * 100) : 0;
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <div className="flex justify-between items-center mb-8">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-                        <FileText className="mr-3 text-red-600" />
-                        Relatórios e Métricas
+                    <h1 className="text-2xl font-black text-black uppercase italic flex items-center">
+                        <BarChart3 className="w-6 h-6 mr-3 text-black" />
+                        Relatórios
                     </h1>
-                    <p className="text-gray-500 mt-1">Visão geral da operação de garantia.</p>
+                    <p className="text-gray-400 text-sm mt-1 font-light">Métricas de desempenho e tendências.</p>
                 </div>
-                <div className="flex gap-2">
-                    <button
-                        onClick={fetchData}
-                        className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                        title="Atualizar dados"
-                    >
-                        <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-                    </button>
-                    <button className="flex items-center px-4 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm">
-                        <Download className="w-4 h-4 mr-2" />
-                        Exportar CSV
-                    </button>
-                </div>
+                <button className="flex items-center px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors text-sm font-bold uppercase tracking-widest">
+                    <Download className="w-4 h-4 mr-2" /> Exportar
+                </button>
             </div>
 
-            {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <p className="text-sm font-medium text-gray-500 uppercase">Total de Chamados</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-2">{metrics.total}</p>
-                </div>
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <p className="text-sm font-medium text-gray-500 uppercase">Pendentes</p>
-                    <p className="text-3xl font-bold text-amber-500 mt-2">{metrics.pending}</p>
-                </div>
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <p className="text-sm font-medium text-gray-500 uppercase">Aprovados</p>
-                    <p className="text-3xl font-bold text-emerald-500 mt-2">{metrics.approved}</p>
-                </div>
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <p className="text-sm font-medium text-gray-500 uppercase">Taxa de Aprovação</p>
-                    <p className="text-3xl font-bold text-blue-600 mt-2">{metrics.approvalRate}%</p>
-                </div>
-            </div>
+            {loading ? (
+                <div className="text-gray-400">Carregando...</div>
+            ) : (
+                <>
+                    {/* KPI Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                        <div className="bg-white p-6 shadow-sm border border-gray-100">
+                            <h3 className="text-gray-400 text-[10px] font-black uppercase tracking-widest">Total Chamados</h3>
+                            <div className="flex items-end justify-between mt-2">
+                                <p className="text-3xl font-black text-black">{total}</p>
+                                <Minus className="w-5 h-5 text-gray-300" />
+                            </div>
+                        </div>
+                        <div className="bg-white p-6 shadow-sm border border-gray-100">
+                            <h3 className="text-gray-400 text-[10px] font-black uppercase tracking-widest">Aprovados</h3>
+                            <div className="flex items-end justify-between mt-2">
+                                <p className="text-3xl font-black text-green-600">{approved}</p>
+                                <ArrowUpRight className="w-5 h-5 text-green-500" />
+                            </div>
+                        </div>
+                        <div className="bg-white p-6 shadow-sm border border-gray-100">
+                            <h3 className="text-gray-400 text-[10px] font-black uppercase tracking-widest">Rejeitados</h3>
+                            <div className="flex items-end justify-between mt-2">
+                                <p className="text-3xl font-black text-red-600">{rejected}</p>
+                                <ArrowDownRight className="w-5 h-5 text-red-500" />
+                            </div>
+                        </div>
+                        <div className="bg-white p-6 shadow-sm border border-gray-100">
+                            <h3 className="text-gray-400 text-[10px] font-black uppercase tracking-widest">Taxa Aprovação</h3>
+                            <div className="flex items-end justify-between mt-2">
+                                <p className="text-3xl font-black text-black">{rate}%</p>
+                            </div>
+                        </div>
+                    </div>
 
-            {/* Charts Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <ClaimsVolumeChart claims={claims} />
-                <StatusDistributionChart claims={claims} />
-            </div>
+                    {/* Charts */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <ClaimsVolumeChart claims={claims} />
+                        <StatusDistributionChart claims={claims} />
+                    </div>
+                </>
+            )}
         </div>
     );
 };

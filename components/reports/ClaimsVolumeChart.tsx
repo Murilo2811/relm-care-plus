@@ -9,10 +9,10 @@ import {
     ResponsiveContainer,
     Legend
 } from 'recharts';
-import { Claim } from '../../types';
+import { WarrantyClaim } from '../../types';
 
 interface ClaimsVolumeChartProps {
-    claims: Claim[];
+    claims: WarrantyClaim[];
 }
 
 export const ClaimsVolumeChart: React.FC<ClaimsVolumeChartProps> = ({ claims }) => {
@@ -50,7 +50,7 @@ export const ClaimsVolumeChart: React.FC<ClaimsVolumeChartProps> = ({ claims }) 
     }
 
     return (
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+        <div className="bg-white p-6 shadow-sm border border-gray-100">
             <h3 className="text-lg font-bold text-gray-800 mb-4">Volume de Solicitações (Últimos dias)</h3>
             <div className="h-72 w-full">
                 <ResponsiveContainer width="100%" height="100%">
@@ -70,10 +70,10 @@ export const ClaimsVolumeChart: React.FC<ClaimsVolumeChartProps> = ({ claims }) 
                             allowDecimals={false}
                         />
                         <Tooltip
-                            cursor={{ fill: '#fef2f2' }}
-                            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                            cursor={{ fill: '#f9fafb' }}
+                            contentStyle={{ borderRadius: '0px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                         />
-                        <Bar dataKey="count" name="Solicitações" fill="#dc2626" radius={[4, 4, 0, 0]} barSize={32} />
+                        <Bar dataKey="count" name="Solicitações" fill="#000000" radius={[0, 0, 0, 0]} barSize={32} />
                     </BarChart>
                 </ResponsiveContainer>
             </div>

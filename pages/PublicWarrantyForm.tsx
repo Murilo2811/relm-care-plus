@@ -319,7 +319,7 @@ const PublicWarrantyForm = () => {
                         <button
                           type="submit"
                           disabled={loading}
-                          className="flex-1 bg-black text-white px-8 py-5 text-sm font-bold uppercase tracking-[0.2em] hover:bg-zinc- zinc-900 transition-all rounded-none disabled:opacity-50"
+                          className="flex-1 bg-black text-white px-8 py-5 text-sm font-bold uppercase tracking-[0.2em] hover:bg-zinc-900 transition-all rounded-none disabled:opacity-50"
                         >
                           {loading ? 'Processing...' : 'Complete Registration'}
                         </button>

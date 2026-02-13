@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-import { Claim } from '../../types';
+import { WarrantyClaim } from '../../types';
 
 interface StatusDistributionChartProps {
-    claims: Claim[];
+    claims: WarrantyClaim[];
 }
 
 const COLORS = {
@@ -40,7 +40,7 @@ export const StatusDistributionChart: React.FC<StatusDistributionChartProps> = (
     }
 
     return (
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+        <div className="bg-white p-6 shadow-sm border border-gray-100">
             <h3 className="text-lg font-bold text-gray-800 mb-4">Status dos Chamados</h3>
             <div className="h-72 w-full">
                 <ResponsiveContainer width="100%" height="100%">
@@ -59,7 +59,7 @@ export const StatusDistributionChart: React.FC<StatusDistributionChartProps> = (
                             ))}
                         </Pie>
                         <Tooltip
-                            contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                            contentStyle={{ borderRadius: '0px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                         />
                         <Legend verticalAlign="bottom" height={36} iconType="circle" />
                     </PieChart>

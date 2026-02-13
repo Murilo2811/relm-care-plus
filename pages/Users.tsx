@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { User, Role, Store } from '../types';
+import { User, Role } from '../types';
 import { api } from '../services/api';
-import { Search, Plus, User as UserIcon, Shield, Lock, Power, Store as StoreIcon, AlertTriangle, Edit } from 'lucide-react';
+import { Plus, Search, UserPlus, Users as UsersIcon, Edit, Trash2, X } from 'lucide-react';
 
 interface UsersProps {
   user: User;
@@ -9,91 +9,44 @@ interface UsersProps {
 
 const Users: React.FC<UsersProps> = ({ user }) => {
   const [users, setUsers] = useState<User[]>([]);
-  const [stores, setStores] = useState<Store[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
-
-  // Modal State
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newUser, setNewUser] = useState({
-    name: '',
-    email: '',
-    role: Role.LOJA,
-    storeId: '',
-    active: true,
-    id: '' // added for edit mode
-  });
-  const [isEditing, setIsEditing] = useState(false);
-
-  // Confirmation State
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [userToToggle, setUserToToggle] = useState<User | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [formName, setFormName] = useState('');
+  const [formEmail, setFormEmail] = useState('');
+  const [formRole, setFormRole] = useState<Role>(Role.LOJA);
+  const [formPassword, setFormPassword] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    fetchData();
+    loadUsers();
   }, []);
 
-  const fetchData = async () => {
+  const loadUsers = async () => {
+    setLoading(true);
     try {
-      const [uData, sData] = await Promise.all([
-        api.users.list(),
-        api.stores.list()
-      ]);
-      setUsers(uData);
-      setStores(sData);
+      const data = await api.users.list();
+      setUsers(data);
     } catch (e) {
       console.error(e);
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   };
 
-  const initiateToggleStatus = (targetUser: User) => {
-    setUserToToggle(targetUser);
-    setIsConfirmOpen(true);
-  };
-
-  const confirmToggleStatus = async () => {
-    if (!userToToggle) return;
-
+  const handleCreate = async () => {
+    if (!formName || !formEmail || !formPassword) return;
+    setSubmitting(true);
     try {
-      await api.users.toggleStatus(userToToggle.id);
-      // Refresh local list
-      setUsers(prev => prev.map(u => u.id === userToToggle.id ? { ...u, active: !u.active } : u));
-      setIsConfirmOpen(false);
-      setUserToToggle(null);
+      await api.users.create({ name: formName, email: formEmail, role: formRole, active: true } as any);
+      setShowModal(false);
+      setFormName('');
+      setFormEmail('');
+      setFormPassword('');
+      loadUsers();
     } catch (e) {
-      alert("Erro ao alterar status");
+      console.error(e);
     }
-  };
-
-  const handleCreateUser = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      if (isEditing) {
-        await api.users.update(newUser.id, {
-          name: newUser.name,
-          email: newUser.email,
-          role: newUser.role,
-          storeId: newUser.role === Role.LOJA ? newUser.storeId : undefined,
-          active: newUser.active
-        });
-      } else {
-        await api.users.create({
-          name: newUser.name,
-          email: newUser.email,
-          role: newUser.role,
-          storeId: newUser.role === Role.LOJA ? newUser.storeId : undefined,
-          active: true
-        });
-      }
-      setIsModalOpen(false);
-      setNewUser({ name: '', email: '', role: Role.LOJA, storeId: '', active: true, id: '' });
-      setIsEditing(false);
-      fetchData(); // Refresh list
-    } catch (e: any) {
-      alert(`Erro ao salvar usuário: ${e.message || 'Erro desconhecido'}`);
-    }
+    setSubmitting(false);
   };
 
   const filteredUsers = users.filter(u =>
@@ -101,22 +54,11 @@ const Users: React.FC<UsersProps> = ({ user }) => {
     u.email.toLowerCase().includes(filter.toLowerCase())
   );
 
-  const getRoleLabel = (role: Role) => {
-    switch (role) {
-      case Role.ADMIN_RELM: return 'Administrador';
-      case Role.GERENTE_RELM: return 'Gerente';
-      case Role.LOJA: return 'Lojista';
-      default: return role;
-    }
-  };
-
-  const getRoleColor = (role: Role) => {
-    switch (role) {
-      case Role.ADMIN_RELM: return 'bg-purple-100 text-purple-800';
-      case Role.GERENTE_RELM: return 'bg-blue-100 text-blue-800';
-      case Role.LOJA: return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
+  const ROLE_LABELS: Record<string, string> = {
+    admin_relm: 'Admin',
+    gerente_relm: 'Gerente',
+    operador_relm: 'Operador',
+    loja: 'Loja',
   };
 
   return (
@@ -124,117 +66,71 @@ const Users: React.FC<UsersProps> = ({ user }) => {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800 flex items-center">
-            <UserIcon className="w-6 h-6 mr-3 text-red-600" />
-            Usuários do Sistema
+          <h1 className="text-2xl font-black text-black uppercase italic flex items-center">
+            <UsersIcon className="w-6 h-6 mr-3 text-black" />
+            Usuários
           </h1>
-          <p className="text-gray-500 text-sm mt-1">Gerencie acessos e permissões da plataforma.</p>
+          <p className="text-gray-400 text-sm mt-1 font-light">Gerencie acessos e permissões do sistema.</p>
         </div>
         <button
-          onClick={() => {
-            setNewUser({ name: '', email: '', role: Role.LOJA, storeId: '', active: true, id: '' });
-            setIsEditing(false);
-            setIsModalOpen(true);
-          }}
-          className="flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 shadow-md shadow-red-200 transition-all"
+          onClick={() => setShowModal(true)}
+          className="flex items-center px-4 py-2 bg-black text-white hover:bg-zinc-800 shadow-lg shadow-gray-200 transition-all text-sm font-bold uppercase tracking-widest"
         >
-          <Plus className="w-4 h-4 mr-2" />
-          Novo Usuário
+          <UserPlus className="w-4 h-4 mr-2" /> Novo Usuário
         </button>
       </div>
 
-      {/* Filter Bar */}
-      <div className="bg-white p-4 rounded-t-xl border-b border-gray-100 flex items-center shadow-sm">
+      {/* Filter */}
+      <div className="bg-white p-4 shadow-sm border border-gray-100 mb-6 flex items-center">
         <div className="relative w-full md:w-96">
           <input
             type="text"
             placeholder="Buscar por nome ou email..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-all"
+            className="w-full pl-10 pr-4 py-2 border-b border-gray-200 focus:border-black focus:outline-none rounded-none bg-white"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
           />
-          <Search className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" />
+          <Search className="w-5 h-5 text-gray-300 absolute left-3 top-2.5" />
         </div>
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-b-xl shadow-sm overflow-hidden">
+      <div className="bg-white shadow-sm overflow-hidden border border-gray-100">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuário</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Função</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Associação</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+              <th className="px-6 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Nome</th>
+              <th className="px-6 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Email</th>
+              <th className="px-6 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Perfil</th>
+              <th className="px-6 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
+              <th className="px-6 py-3 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Ações</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white divide-y divide-gray-100">
             {loading ? (
-              <tr><td colSpan={5} className="text-center py-10">Carregando...</td></tr>
+              <tr><td colSpan={5} className="text-center py-10 text-gray-400">Carregando...</td></tr>
             ) : filteredUsers.map((u) => (
               <tr key={u.id} className="hover:bg-gray-50 transition-colors">
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
-                    <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold">
-                      {u.name.charAt(0)}
-                    </div>
-                    <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900">{u.name}</div>
-                      <div className="text-sm text-gray-500">{u.email}</div>
-                    </div>
+                    <div className="w-8 h-8 bg-black text-white flex items-center justify-center font-black text-sm">{u.name.charAt(0)}</div>
+                    <span className="ml-3 text-sm font-medium text-black">{u.name}</span>
                   </div>
                 </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{u.email}</td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getRoleColor(u.role)}`}>
-                    {getRoleLabel(u.role)}
+                  <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest bg-gray-100 text-black border border-gray-200">
+                    {ROLE_LABELS[u.role] || u.role}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {u.storeId ? (
-                    <div className="flex items-center">
-                      <StoreIcon className="w-4 h-4 mr-1 text-gray-400" />
-                      {stores.find(s => s.id === u.storeId)?.tradeName || 'Loja Desconhecida'}
-                    </div>
-                  ) : (
-                    <span className="text-gray-400">-</span>
-                  )}
-                </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${u.active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                  <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest ${u.active ? 'bg-gray-50 text-black border border-gray-200' : 'bg-gray-100 text-gray-400 border border-gray-200'}`}>
                     {u.active ? 'Ativo' : 'Inativo'}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  {u.id !== user.id && (
-                    <>
-                      <button
-                        onClick={() => {
-                          setNewUser({
-                            name: u.name,
-                            email: u.email,
-                            role: u.role,
-                            storeId: u.storeId || '',
-                            active: u.active,
-                            id: u.id
-                          });
-                          setIsEditing(true);
-                          setIsModalOpen(true);
-                        }}
-                        className="p-1 rounded hover:bg-gray-100 transition-colors text-blue-600 mr-2"
-                        title="Editar Usuário"
-                      >
-                        <Edit className="w-5 h-5" />
-                      </button>
-                      <button
-                        onClick={() => initiateToggleStatus(u)}
-                        className={`p-1 rounded hover:bg-gray-100 transition-colors ${u.active ? 'text-green-600' : 'text-red-600'}`}
-                        title={u.active ? "Desativar Acesso" : "Ativar Acesso"}
-                      >
-                        <Power className="w-5 h-5" />
-                      </button>
-                    </>
-                  )}
+                <td className="px-6 py-4 whitespace-nowrap text-right">
+                  <button className="text-gray-400 hover:text-black transition-colors mr-3"><Edit className="w-4 h-4" /></button>
+                  <button className="text-gray-400 hover:text-red-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
                 </td>
               </tr>
             ))}
@@ -242,135 +138,49 @@ const Users: React.FC<UsersProps> = ({ user }) => {
         </table>
       </div>
 
-      {/* Confirmation Modal */}
-      {isConfirmOpen && userToToggle && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-fade-in-up">
-            <div className="p-6 text-center">
-              <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <AlertTriangle className="w-6 h-6 text-yellow-600" />
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">
-                {userToToggle.active ? 'Desativar Usuário?' : 'Reativar Usuário?'}
-              </h3>
-              <p className="text-sm text-gray-500 mb-6">
-                Você está prestes a {userToToggle.active ? 'bloquear' : 'liberar'} o acesso de <span className="font-semibold text-gray-900">{userToToggle.name}</span>.
-              </p>
-              <div className="flex gap-3 justify-center">
-                <button
-                  onClick={() => setIsConfirmOpen(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium"
-                >
-                  Cancelar
-                </button>
-                <button
-                  onClick={confirmToggleStatus}
-                  className={`px-4 py-2 rounded-lg text-white font-medium ${userToToggle.active ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'}`}
-                >
-                  Confirmar
-                </button>
-              </div>
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white w-full max-w-lg shadow-2xl">
+            <div className="flex justify-between items-center p-6 border-b border-gray-100">
+              <h2 className="text-lg font-black text-black uppercase italic">Novo Usuário</h2>
+              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-black"><X className="w-5 h-5" /></button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* Create User Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in-up">
-            <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-              <h3 className="text-lg font-bold text-gray-900">{isEditing ? 'Editar Usuário' : 'Novo Usuário'}</h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">✕</button>
-            </div>
-
-            <form onSubmit={handleCreateUser} className="p-6 space-y-4">
+            <div className="p-6 space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Nome Completo</label>
-                <input
-                  required
-                  className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 px-3 py-2"
-                  value={newUser.name}
-                  onChange={e => setNewUser({ ...newUser, name: e.target.value })}
-                />
+                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">Nome Completo</label>
+                <input className="w-full border-b border-gray-200 focus:border-black outline-none py-2 rounded-none" value={formName} onChange={(e) => setFormName(e.target.value)} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input
-                  required
-                  type="email"
-                  className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 px-3 py-2"
-                  value={newUser.email}
-                  onChange={e => setNewUser({ ...newUser, email: e.target.value })}
-                />
+                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">Email</label>
+                <input className="w-full border-b border-gray-200 focus:border-black outline-none py-2 rounded-none" type="email" value={formEmail} onChange={(e) => setFormEmail(e.target.value)} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Permissão (Role)</label>
-                <div className="grid grid-cols-1 gap-2">
-                  <label className={`flex items-center p-3 border rounded-lg cursor-pointer transition-all ${newUser.role === Role.ADMIN_RELM ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}>
-                    <input
-                      type="radio"
-                      name="role"
-                      value={Role.ADMIN_RELM}
-                      checked={newUser.role === Role.ADMIN_RELM}
-                      onChange={() => setNewUser({ ...newUser, role: Role.ADMIN_RELM, storeId: '' })}
-                      className="text-red-600 focus:ring-red-500"
-                    />
-                    <div className="ml-3">
-                      <span className="block text-sm font-medium text-gray-900">Administrador</span>
-                      <span className="block text-xs text-gray-500">Acesso total ao sistema</span>
-                    </div>
-                  </label>
-                  <label className={`flex items-center p-3 border rounded-lg cursor-pointer transition-all ${newUser.role === Role.LOJA ? 'border-red-500 bg-red-50' : 'border-gray-200'}`}>
-                    <input
-                      type="radio"
-                      name="role"
-                      value={Role.LOJA}
-                      checked={newUser.role === Role.LOJA}
-                      onChange={() => setNewUser({ ...newUser, role: Role.LOJA })}
-                      className="text-red-600 focus:ring-red-500"
-                    />
-                    <div className="ml-3">
-                      <span className="block text-sm font-medium text-gray-900">Lojista</span>
-                      <span className="block text-xs text-gray-500">Acesso limitado à loja vinculada</span>
-                    </div>
-                  </label>
+                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">Senha</label>
+                <input className="w-full border-b border-gray-200 focus:border-black outline-none py-2 rounded-none" type="password" value={formPassword} onChange={(e) => setFormPassword(e.target.value)} />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-4">Perfil de Acesso</label>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { value: Role.ADMIN_RELM, label: 'Administrador' },
+                    { value: Role.GERENTE_RELM, label: 'Gerente' },
+                    { value: Role.LOJA, label: 'Loja' },
+                  ].map(opt => (
+                    <label key={opt.value} className={`flex items-center p-3 border-2 cursor-pointer transition-all ${formRole === opt.value ? 'border-black bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                      <input type="radio" name="role" className="text-black focus:ring-black" checked={formRole === opt.value} onChange={() => setFormRole(opt.value)} />
+                      <span className="ml-2 text-sm font-medium">{opt.label}</span>
+                    </label>
+                  ))}
                 </div>
               </div>
-
-              {newUser.role === Role.LOJA && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Vincular Loja</label>
-                  <select
-                    required
-                    className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 px-3 py-2"
-                    value={newUser.storeId}
-                    onChange={e => setNewUser({ ...newUser, storeId: e.target.value })}
-                  >
-                    <option value="">Selecione uma loja...</option>
-                    {stores.map(s => (
-                      <option key={s.id} value={s.id}>{s.tradeName} ({s.city})</option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              <div className="pt-4 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 shadow-sm"
-                >
-                  {isEditing ? 'Salvar Alterações' : 'Criar Usuário'}
-                </button>
-              </div>
-            </form>
+            </div>
+            <div className="p-6 border-t border-gray-100 flex gap-3">
+              <button onClick={() => setShowModal(false)} className="flex-1 py-3 px-4 border border-gray-200 text-gray-700 hover:bg-gray-50 font-bold uppercase tracking-widest text-sm transition-colors">Cancelar</button>
+              <button onClick={handleCreate} disabled={submitting} className="flex-1 py-3 px-4 bg-black text-white hover:bg-zinc-800 font-bold uppercase tracking-widest text-sm transition-colors disabled:opacity-50">
+                {submitting ? 'Criando...' : 'Criar Usuário'}
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -45,9 +45,9 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Visão Geral</h1>
+        <h1 className="text-2xl font-black text-black uppercase italic">Visão Geral</h1>
         {user.role !== Role.LOJA && (
-          <button className="flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
+          <button className="flex items-center px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors text-sm font-bold uppercase tracking-widest">
             <Download className="w-4 h-4 mr-2" />
             Exportar CSV
           </button>
@@ -56,21 +56,21 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
 
       {/* Store Info Card (Only for Stores) */}
       {user.role === Role.LOJA && store && (
-        <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-xl p-6 text-white mb-8 shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center">
+        <div className="bg-black p-6 text-white mb-8 shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center">
           <div>
             <div className="flex items-center space-x-2 mb-1">
-              <span className="bg-red-600 text-xs font-bold px-2 py-0.5 rounded">LOJA PARCEIRA</span>
-              <span className="text-gray-400 text-sm">#{store.id}</span>
+              <span className="bg-white text-black text-[10px] font-black px-2 py-0.5 uppercase tracking-widest">LOJA PARCEIRA</span>
+              <span className="text-gray-500 text-sm">#{store.id}</span>
             </div>
-            <h2 className="text-3xl font-bold">{store.tradeName}</h2>
-            <div className="text-gray-300 text-sm mt-1 flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+            <h2 className="text-3xl font-black italic">{store.tradeName}</h2>
+            <div className="text-gray-400 text-sm mt-1 flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
               <span>{store.city} - {store.state}</span>
               <span className="hidden md:inline text-gray-600">•</span>
               <span>CNPJ: {store.cnpj}</span>
             </div>
           </div>
           <div className="mt-4 md:mt-0 text-right">
-            <div className="text-xs text-gray-400 uppercase tracking-wider">Contato</div>
+            <div className="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Contato</div>
             <div className="font-medium">{store.contactName}</div>
             <div className="text-sm text-gray-400">{store.contactEmail}</div>
           </div>
@@ -79,99 +79,99 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <h3 className="text-gray-500 text-sm font-medium">Total de Solicitações</h3>
-          <p className="text-3xl font-bold text-gray-800 mt-2">{claims.length}</p>
+        <div className="bg-white p-6 shadow-sm border border-gray-100">
+          <h3 className="text-gray-400 text-[10px] font-black uppercase tracking-widest">Total de Solicitações</h3>
+          <p className="text-3xl font-black text-black mt-2">{claims.length}</p>
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <h3 className="text-gray-500 text-sm font-medium">Em Análise</h3>
-          <p className="text-3xl font-bold text-yellow-600 mt-2">
+        <div className="bg-white p-6 shadow-sm border border-gray-100">
+          <h3 className="text-gray-400 text-[10px] font-black uppercase tracking-widest">Em Análise</h3>
+          <p className="text-3xl font-black text-yellow-600 mt-2">
             {claims.filter(c => c.status === ClaimStatus.EM_ANALISE).length}
           </p>
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <h3 className="text-gray-500 text-sm font-medium">Aguardando Cliente</h3>
-          <p className="text-3xl font-bold text-orange-600 mt-2">
+        <div className="bg-white p-6 shadow-sm border border-gray-100">
+          <h3 className="text-gray-400 text-[10px] font-black uppercase tracking-widest">Aguardando Cliente</h3>
+          <p className="text-3xl font-black text-orange-600 mt-2">
             {claims.filter(c => c.status === ClaimStatus.AGUARDANDO_CLIENTE).length}
           </p>
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <h3 className="text-gray-500 text-sm font-medium">Aprovados (Mês)</h3>
-          <p className="text-3xl font-bold text-green-600 mt-2">
+        <div className="bg-white p-6 shadow-sm border border-gray-100">
+          <h3 className="text-gray-400 text-[10px] font-black uppercase tracking-widest">Aprovados (Mês)</h3>
+          <p className="text-3xl font-black text-green-600 mt-2">
             {claims.filter(c => c.status === ClaimStatus.APROVADO).length}
           </p>
         </div>
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white p-4 rounded-t-xl border-b border-gray-100 flex items-center justify-between">
+      <div className="bg-white p-4 border-b border-gray-100 flex items-center justify-between">
         <div className="relative w-96">
           <input
             type="text"
             placeholder="Buscar por protocolo, nome ou serial..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+            className="w-full pl-10 pr-4 py-2 border-b border-gray-200 focus:border-black focus:outline-none rounded-none bg-white"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
           />
-          <Search className="w-5 h-5 text-gray-400 absolute left-3 top-2.5" />
+          <Search className="w-5 h-5 text-gray-300 absolute left-3 top-2.5" />
         </div>
-        <button className="flex items-center px-4 py-2 text-gray-600 hover:bg-gray-50 rounded-lg">
-          <Filter className="w-4 h-4 mr-2" /> Filtros Avançados
+        <button className="flex items-center px-4 py-2 text-gray-500 hover:bg-gray-50 text-sm font-bold uppercase tracking-widest">
+          <Filter className="w-4 h-4 mr-2" /> Filtros
         </button>
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-b-xl shadow-sm overflow-hidden">
+      <div className="bg-white shadow-sm overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Protocolo / Data</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Produto / Serial</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Loja</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+              <th className="px-6 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Protocolo / Data</th>
+              <th className="px-6 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Cliente</th>
+              <th className="px-6 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Produto / Serial</th>
+              <th className="px-6 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Loja</th>
+              <th className="px-6 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
+              <th className="px-6 py-3 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Ações</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white divide-y divide-gray-100">
             {loading ? (
-              <tr><td colSpan={6} className="text-center py-10">Carregando...</td></tr>
+              <tr><td colSpan={6} className="text-center py-10 text-gray-400">Carregando...</td></tr>
             ) : filteredClaims.map((claim) => (
               <tr
                 key={claim.id}
                 className={`transition-colors ${claim.linkStatus === 'PENDING_REVIEW'
-                  ? 'bg-red-50 hover:bg-red-100 border-l-4 border-l-red-500'
+                  ? 'bg-gray-50 hover:bg-gray-100 border-l-4 border-l-black'
                   : 'hover:bg-gray-50 border-l-4 border-l-transparent'
                   }`}
               >
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm font-medium text-gray-900">{claim.protocolNumber}</div>
-                  <div className="text-sm text-gray-500">{new Date(claim.createdAt).toLocaleDateString()}</div>
+                  <div className="text-sm font-medium text-black">{claim.protocolNumber}</div>
+                  <div className="text-sm text-gray-400">{new Date(claim.createdAt).toLocaleDateString()}</div>
                 </td>
                 <td className="px-6 py-4">
-                  <div className="text-sm text-gray-900">{claim.customerName}</div>
-                  <div className="text-xs text-gray-500">{claim.customerPhone}</div>
+                  <div className="text-sm text-black">{claim.customerName}</div>
+                  <div className="text-xs text-gray-400">{claim.customerPhone}</div>
                 </td>
                 <td className="px-6 py-4">
-                  <div className="text-sm text-gray-900">{claim.productDescription}</div>
-                  <div className="text-xs text-gray-500 font-mono">{claim.serialNumber}</div>
+                  <div className="text-sm text-black">{claim.productDescription}</div>
+                  <div className="text-xs text-gray-400 font-mono">{claim.serialNumber}</div>
                 </td>
                 <td className="px-6 py-4">
-                  <div className="text-sm text-gray-900">{claim.purchaseStoreName}</div>
+                  <div className="text-sm text-black">{claim.purchaseStoreName}</div>
                   {claim.linkStatus === 'PENDING_REVIEW' && (
-                    <div className="flex items-center mt-1 text-red-700">
+                    <div className="flex items-center mt-1 text-black">
                       <AlertCircle className="w-3 h-3 mr-1" />
-                      <span className="text-xs font-bold">Vínculo Pendente</span>
+                      <span className="text-[10px] font-black uppercase tracking-wider">Vínculo Pendente</span>
                     </div>
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${STATUS_COLORS[claim.status]}`}>
+                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold ${STATUS_COLORS[claim.status]}`}>
                     {STATUS_LABELS[claim.status]}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <Link to={`/admin/claims/${claim.id}`} className="text-red-600 hover:text-red-900">
+                  <Link to={`/admin/claims/${claim.id}`} className="text-black underline underline-offset-4 decoration-1 hover:text-gray-600">
                     Detalhes
                   </Link>
                 </td>
