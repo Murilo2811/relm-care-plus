@@ -8,7 +8,10 @@ interface StoresProps {
   user: User;
 }
 
+import { useNavigate } from 'react-router-dom';
+
 const Stores: React.FC<StoresProps> = ({ user }) => {
+  const navigate = useNavigate();
   const [stores, setStores] = useState<Store[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
@@ -121,7 +124,10 @@ const Stores: React.FC<StoresProps> = ({ user }) => {
                 <div className="text-[10px] font-bold text-gray-400 bg-gray-50 px-2 py-1 uppercase tracking-widest">
                   {store.claimsCount} {t.stores.requests}
                 </div>
-                <button className="text-sm font-bold text-black hover:text-gray-600 uppercase tracking-widest underline underline-offset-4 decoration-1">
+                <button
+                  onClick={() => navigate(`/admin/stores/${store.id}`)}
+                  className="text-sm font-bold text-black hover:text-gray-600 uppercase tracking-widest underline underline-offset-4 decoration-1"
+                >
                   {t.stores.manage}
                 </button>
               </div>

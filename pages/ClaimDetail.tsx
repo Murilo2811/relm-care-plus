@@ -161,7 +161,7 @@ const ClaimDetail: React.FC<ClaimDetailProps> = ({ user }) => {
                 <textarea
                   className="w-full border border-gray-200 focus:border-black outline-none p-3 bg-white rounded-none"
                   rows={3}
-                  placeholder={t.claim.commentPlaceholder}
+                  placeholder={t.claim.mandatoryNote}
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                 ></textarea>
@@ -169,7 +169,7 @@ const ClaimDetail: React.FC<ClaimDetailProps> = ({ user }) => {
                 <button
                   onClick={handleUpdateStatus}
                   disabled={!newStatus || !comment}
-                  className="w-full py-3 px-4 bg-black text-white hover:bg-zinc-800 disabled:opacity-50 font-bold uppercase tracking-widest text-sm transition-colors"
+                  className="w-full py-3 px-4 bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 font-bold uppercase tracking-widest text-sm transition-colors rounded shadow-md"
                 >
                   {t.claim.confirmUpdate}
                 </button>

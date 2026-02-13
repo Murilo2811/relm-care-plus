@@ -196,6 +196,14 @@ const MockApi = {
     },
     getById: async (id: string) => {
       return mockStores.find(s => s.id === id) || null;
+    },
+    update: async (id: string, data: Partial<Store>) => {
+      const index = mockStores.findIndex(s => s.id === id);
+      if (index >= 0) {
+        mockStores[index] = { ...mockStores[index], ...data };
+        return mockStores[index];
+      }
+      throw new Error('Store not found');
     }
   },
   users: {
@@ -521,6 +529,34 @@ const RemoteApi = {
         active: s.active,
         claimsCount: s.claims_count
       } as Store;
+    },
+    update: async (id: string, data: Partial<Store>) => {
+      if (USE_MOCK) {
+        const index = mockStores.findIndex(s => s.id === id);
+        if (index >= 0) {
+          mockStores[index] = { ...mockStores[index], ...data };
+          return mockStores[index];
+        }
+        throw new Error('Store not found');
+      }
+
+      const { data: updated, error } = await supabase
+        .from('stores')
+        .update({
+          trade_name: data.tradeName,
+          legal_name: data.legalName,
+          city: data.city,
+          state: data.state,
+          contact_name: data.contactName,
+          contact_email: data.contactEmail,
+          active: data.active
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return updated;
     }
   },
   users: {

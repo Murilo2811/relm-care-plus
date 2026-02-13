@@ -101,8 +101,8 @@ const Users: React.FC<UsersProps> = ({ user }) => {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">{t.claim.name}</th>
-              <th className="px-6 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">{t.claim.email}</th>
+              <th className="px-6 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">{t.users.name}</th>
+              <th className="px-6 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">{t.users.email}</th>
               <th className="px-6 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">{t.users.role}</th>
               <th className="px-6 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-widest">{t.dashboard.status}</th>
               <th className="px-6 py-3 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">{t.dashboard.actions}</th>

@@ -9,6 +9,7 @@ import TrackClaim from './pages/TrackClaim';
 import ClaimDetail from './pages/ClaimDetail';
 import Home from './pages/Home';
 import Stores from './pages/Stores';
+import StoreDetail from './pages/StoreDetail';
 import Users from './pages/Users';
 import Settings from './pages/Settings';
 import Reports from './pages/Reports';
@@ -48,6 +49,7 @@ export default function App() {
                 <Routes>
                   <Route path="dashboard" element={<Dashboard user={user!} />} />
                   <Route path="stores" element={<Stores user={user!} />} />
+                  <Route path="stores/:id" element={<StoreDetail user={user!} />} />
                   <Route path="users" element={<Users user={user!} />} />
                   <Route path="settings" element={<Settings user={user!} />} />
                   <Route path="reports" element={<Reports user={user!} />} />

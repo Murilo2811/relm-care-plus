@@ -171,6 +171,13 @@ export interface Translations {
         noStoresFound: string;
         adjustFilters: string;
         loadingPartners: string;
+        storeDetails: string;
+        saveChanges: string;
+        linkedUsers: string;
+        linkedClaims: string;
+        addUser: string;
+        editStore: string;
+        backToStores: string;
     };
     users: {
         users: string;
@@ -210,6 +217,20 @@ export interface Translations {
         supportEmail: string;
         aboutSettings: string;
         aboutSettingsDesc: string;
+        generalAccess: string;
+        maintenanceMode: string;
+        maintenanceModeDesc: string;
+        warrantyRules: string;
+        defaultPeriod: string;
+        warrantyTermsLink: string;
+        autoApproval: string;
+        autoApprovalDesc: string;
+        integrations: string;
+        whatsappApi: string;
+        whatsappKeyPlaceholder: string;
+        webhookEvents: string;
+        webhookDesc: string;
+        configureWebhooks: string;
     };
     reports: {
         reports: string;

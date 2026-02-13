@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { User } from '../types';
 import { api } from '../services/api';
-import { Settings as SettingsIcon, Bell, Shield, Globe, Info, Save, CheckCircle } from 'lucide-react';
+import { Settings as SettingsIcon, Globe, Shield, Smartphone, Save, CheckCircle, ExternalLink } from 'lucide-react';
 import { useT } from '../i18n/LanguageContext';
 
 interface SettingsProps {
@@ -33,15 +33,21 @@ const Settings: React.FC<SettingsProps> = ({ user }) => {
       } catch (e) { console.error(e); }
    };
 
+   // Helper for checkbox inputs (stored as 'true'/'false' strings)
+   const toggleSetting = (key: string) => {
+      const current = settings[key] === 'true';
+      setSettings({ ...settings, [key]: String(!current) });
+   };
+
    return (
-      <div className="max-w-4xl">
+      <div className="max-w-6xl mx-auto">
+         {/* Header */}
          <div className="flex justify-between items-center mb-8">
             <div>
                <h1 className="text-2xl font-black text-black uppercase italic flex items-center">
-                  <SettingsIcon className="w-6 h-6 mr-3 text-black" />
-                  {t.settings.settingsTitle}
+                  {t.settings.settings}
                </h1>
-               <p className="text-gray-400 text-sm mt-1 font-light">{t.settings.settingsDesc}</p>
+               <p className="text-gray-400 text-sm mt-1 font-light">{t.settings.aboutSettingsDesc}</p>
             </div>
             <button
                onClick={handleSave}
@@ -54,106 +60,143 @@ const Settings: React.FC<SettingsProps> = ({ user }) => {
          {loading ? (
             <div className="text-gray-400">{t.common.loading}</div>
          ) : (
-            <div className="space-y-8">
-               {/* Notifications Section */}
-               <section className="bg-white shadow-sm border border-gray-100 p-6">
-                  <h2 className="text-sm font-black text-black uppercase tracking-widest flex items-center mb-6">
-                     <Bell className="w-5 h-5 mr-2 text-black" />
-                     {t.settings.notifications}
-                  </h2>
-
-                  <div className="space-y-6">
-                     <div className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
+            <div className="space-y-6">
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Geral & Acesso */}
+                  <section className="bg-white p-6 shadow-sm border border-gray-100">
+                     <h2 className="text-sm font-black text-red-600 uppercase tracking-widest flex items-center mb-6">
+                        <Globe className="w-5 h-5 mr-2 text-red-600" />
+                        {t.settings.generalAccess}
+                     </h2>
+                     <div className="space-y-4">
                         <div>
-                           <h3 className="text-sm font-semibold text-black">{t.settings.emailAlerts}</h3>
-                           <p className="text-sm text-gray-400 font-light">{t.settings.emailAlertsDesc}</p>
+                           <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">{t.settings.companyName}</label>
+                           <input
+                              type="text"
+                              className="w-full border-b border-gray-200 focus:border-red-600 outline-none py-2 bg-transparent transition-colors"
+                              value={settings.companyName || 'Relm Care+'}
+                              onChange={(e) => setSettings({ ...settings, companyName: e.target.value })}
+                           />
                         </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                           <input type="checkbox" className="sr-only peer" defaultChecked />
-                           <div className="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-gray-300 peer-checked:bg-black peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:h-5 after:w-5 after:transition-all"></div>
-                        </label>
-                     </div>
-
-                     <div className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
                         <div>
-                           <h3 className="text-sm font-semibold text-black">{t.settings.statusAlerts}</h3>
-                           <p className="text-sm text-gray-400 font-light">{t.settings.statusAlertsDesc}</p>
+                           <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">{t.settings.supportEmail}</label>
+                           <input
+                              type="email"
+                              className="w-full border-b border-gray-200 focus:border-red-600 outline-none py-2 bg-transparent transition-colors"
+                              value={settings.supportEmail || 'suporte@relmbikes.com'}
+                              onChange={(e) => setSettings({ ...settings, supportEmail: e.target.value })}
+                           />
                         </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                           <input type="checkbox" className="sr-only peer" defaultChecked />
-                           <div className="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-gray-300 peer-checked:bg-black peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:h-5 after:w-5 after:transition-all"></div>
-                        </label>
+                        <div className="pt-2 flex items-center justify-between">
+                           <div>
+                              <h3 className="text-sm font-bold text-black">{t.settings.maintenanceMode}</h3>
+                              <p className="text-xs text-gray-400 font-light mt-1">{t.settings.maintenanceModeDesc}</p>
+                           </div>
+                           <label className="relative inline-flex items-center cursor-pointer">
+                              <input
+                                 type="checkbox"
+                                 className="sr-only peer"
+                                 checked={settings.maintenanceMode === 'true'}
+                                 onChange={() => toggleSetting('maintenanceMode')}
+                              />
+                              <div className="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-red-100 peer-checked:bg-red-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:h-5 after:w-5 after:transition-all"></div>
+                           </label>
+                        </div>
                      </div>
-                  </div>
-               </section>
+                  </section>
 
-               {/* Security Section */}
-               <section className="bg-white shadow-sm border border-gray-100 p-6">
-                  <h2 className="text-sm font-black text-black uppercase tracking-widest flex items-center mb-6">
-                     <Shield className="w-5 h-5 mr-2 text-black" />
-                     {t.settings.security}
-                  </h2>
-
-                  <div className="space-y-4">
-                     <div>
-                        <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">{t.settings.warrantyDays}</label>
-                        <input
-                           type="number"
-                           className="w-full md:w-48 border-b border-gray-200 focus:border-black outline-none py-2 rounded-none bg-white"
-                           value={settings.warrantyMaxDays || '365'}
-                           onChange={(e) => setSettings({ ...settings, warrantyMaxDays: e.target.value })}
-                        />
+                  {/* Regras de Garantia */}
+                  <section className="bg-white p-6 shadow-sm border border-gray-100">
+                     <h2 className="text-sm font-black text-red-600 uppercase tracking-widest flex items-center mb-6">
+                        <Shield className="w-5 h-5 mr-2 text-red-600" />
+                        {t.settings.warrantyRules}
+                     </h2>
+                     <div className="space-y-4">
+                        <div>
+                           <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">{t.settings.defaultPeriod}</label>
+                           <div className="flex items-center">
+                              <input
+                                 type="number"
+                                 className="w-24 border-b border-gray-200 focus:border-red-600 outline-none py-2 bg-transparent"
+                                 value={settings.warrantyMaxDays || '24'}
+                                 onChange={(e) => setSettings({ ...settings, warrantyMaxDays: e.target.value })}
+                              />
+                              <span className="ml-3 text-sm text-gray-400 font-light">meses a partir da compra</span>
+                           </div>
+                        </div>
+                        <div>
+                           <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">{t.settings.warrantyTermsLink}</label>
+                           <input
+                              type="text"
+                              className="w-full border-b border-gray-200 focus:border-red-600 outline-none py-2 bg-transparent"
+                              value={settings.warrantyTermsUrl || 'https://relmbikes.com/warranty-policy'}
+                              onChange={(e) => setSettings({ ...settings, warrantyTermsUrl: e.target.value })}
+                           />
+                        </div>
+                        <div className="pt-2 flex items-center justify-between">
+                           <div>
+                              <h3 className="text-sm font-bold text-black">{t.settings.autoApproval}</h3>
+                              <p className="text-xs text-gray-400 font-light mt-1">{t.settings.autoApprovalDesc}</p>
+                           </div>
+                           <label className="relative inline-flex items-center cursor-pointer">
+                              <input
+                                 type="checkbox"
+                                 className="sr-only peer"
+                                 checked={settings.autoApproval === 'true'}
+                                 onChange={() => toggleSetting('autoApproval')}
+                              />
+                              <div className="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-red-100 peer-checked:bg-red-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:h-5 after:w-5 after:transition-all"></div>
+                           </label>
+                        </div>
                      </div>
-                     <div>
-                        <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">{t.settings.responseTime}</label>
-                        <input
-                           type="number"
-                           className="w-full md:w-48 border-b border-gray-200 focus:border-black outline-none py-2 rounded-none bg-white"
-                           value={settings.storeResponseTimeout || '48'}
-                           onChange={(e) => setSettings({ ...settings, storeResponseTimeout: e.target.value })}
-                        />
-                     </div>
-                  </div>
-               </section>
-
-               {/* General Section */}
-               <section className="bg-white shadow-sm border border-gray-100 p-6">
-                  <h2 className="text-sm font-black text-black uppercase tracking-widest flex items-center mb-6">
-                     <Globe className="w-5 h-5 mr-2 text-black" />
-                     {t.layout.general}
-                  </h2>
-                  <div className="space-y-4">
-                     <div>
-                        <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">{t.settings.companyName}</label>
-                        <input
-                           type="text"
-                           className="w-full border-b border-gray-200 focus:border-black outline-none py-2 rounded-none bg-white"
-                           value={settings.companyName || 'Relm Bikes'}
-                           onChange={(e) => setSettings({ ...settings, companyName: e.target.value })}
-                        />
-                     </div>
-                     <div>
-                        <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">{t.settings.supportEmail}</label>
-                        <input
-                           type="email"
-                           className="w-full border-b border-gray-200 focus:border-black outline-none py-2 rounded-none bg-white"
-                           value={settings.supportEmail || 'suporte@relmbikes.com'}
-                           onChange={(e) => setSettings({ ...settings, supportEmail: e.target.value })}
-                        />
-                     </div>
-                  </div>
-               </section>
-
-               {/* Info Box */}
-               <div className="bg-gray-50 border border-gray-200 p-6 flex items-start">
-                  <Info className="w-5 h-5 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />
-                  <div>
-                     <h4 className="text-sm font-bold text-black">{t.settings.aboutConfig}</h4>
-                     <p className="text-sm text-gray-400 font-light mt-1">
-                        {t.settings.configWarning}
-                     </p>
-                  </div>
+                  </section>
                </div>
+
+               {/* Integrações & API */}
+               <section className="bg-white p-6 shadow-sm border border-gray-100">
+                  <h2 className="text-sm font-black text-red-600 uppercase tracking-widest flex items-center mb-6">
+                     <Smartphone className="w-5 h-5 mr-2 text-red-600" />
+                     {t.settings.integrations}
+                  </h2>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                     <div>
+                        <div className="flex items-center justify-between mb-4">
+                           <div className="flex items-center">
+                              <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
+                              <h3 className="text-sm font-bold text-black">{t.settings.whatsappApi}</h3>
+                           </div>
+                           <label className="relative inline-flex items-center cursor-pointer">
+                              <input
+                                 type="checkbox"
+                                 className="sr-only peer"
+                                 checked={settings.whatsappEnabled === 'true'}
+                                 onChange={() => toggleSetting('whatsappEnabled')}
+                              />
+                              <div className="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-green-100 peer-checked:bg-green-500 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:h-5 after:w-5 after:transition-all"></div>
+                           </label>
+                        </div>
+                        <input
+                           type="password"
+                           className="w-full bg-gray-50 border border-gray-200 rounded p-3 text-sm outline-none focus:border-green-500 transition-colors"
+                           placeholder={t.settings.whatsappKeyPlaceholder}
+                           value={settings.whatsappKey || ''}
+                           onChange={(e) => setSettings({ ...settings, whatsappKey: e.target.value })}
+                        />
+                        <p className="text-xs text-gray-400 mt-2">Chave da API do provedor de mensagens (Ex: Twilio/Z-API).</p>
+                     </div>
+
+                     <div className="bg-blue-50 border border-blue-100 p-5 rounded">
+                        <h3 className="text-sm font-bold text-blue-800 mb-2">{t.settings.webhookEvents}</h3>
+                        <p className="text-xs text-blue-600 mb-4 leading-relaxed">
+                           {t.settings.webhookDesc}
+                        </p>
+                        <a href="#" className="inline-flex items-center text-xs font-bold text-blue-700 hover:text-blue-900 uppercase tracking-wider">
+                           {t.settings.configureWebhooks} <ExternalLink className="w-3 h-3 ml-1" />
+                        </a>
+                     </div>
+                  </div>
+               </section>
             </div>
          )}
       </div>

@@ -175,7 +175,10 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <Link to={`/admin/claims/${claim.id}`} className="text-black underline underline-offset-4 decoration-1 hover:text-gray-600">
+                  <Link
+                    to={`/admin/claims/${claim.id}`}
+                    className="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-xs font-bold rounded-none text-gray-700 bg-white hover:bg-gray-50 uppercase tracking-widest"
+                  >
                     {t.dashboard.details}
                   </Link>
                 </td>
