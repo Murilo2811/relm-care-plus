@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Store, User } from '../types';
 import { api } from '../services/api';
-import { Search, MapPin, Phone, Mail, Store as StoreIcon, Plus, Building2 } from 'lucide-react';
+import { Search, MapPin, Mail, Store as StoreIcon, Plus, Building2 } from 'lucide-react';
+import { useT } from '../i18n/LanguageContext';
 
 interface StoresProps {
   user: User;
@@ -11,6 +12,7 @@ const Stores: React.FC<StoresProps> = ({ user }) => {
   const [stores, setStores] = useState<Store[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
+  const { t } = useT();
 
   useEffect(() => {
     const fetchStores = async () => {
@@ -39,13 +41,13 @@ const Stores: React.FC<StoresProps> = ({ user }) => {
         <div>
           <h1 className="text-2xl font-black text-black uppercase italic flex items-center">
             <StoreIcon className="w-6 h-6 mr-3 text-black" />
-            Lojas Parceiras
+            {t.stores.partnerStores}
           </h1>
-          <p className="text-gray-400 text-sm mt-1 font-light">Gerencie a rede de revendedores autorizados.</p>
+          <p className="text-gray-400 text-sm mt-1 font-light">{t.stores.manageNetwork}</p>
         </div>
         <button className="flex items-center px-4 py-2 bg-black text-white hover:bg-zinc-800 shadow-lg shadow-gray-200 transition-all text-sm font-bold uppercase tracking-widest">
           <Plus className="w-4 h-4 mr-2" />
-          Nova Loja
+          {t.stores.newStore}
         </button>
       </div>
 
@@ -54,7 +56,7 @@ const Stores: React.FC<StoresProps> = ({ user }) => {
         <div className="relative w-full md:w-96">
           <input
             type="text"
-            placeholder="Buscar por nome, cidade ou CNPJ..."
+            placeholder={t.stores.searchPlaceholder}
             className="w-full pl-10 pr-4 py-2 border-b border-gray-200 focus:border-black focus:outline-none transition-all rounded-none bg-white"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
@@ -62,13 +64,13 @@ const Stores: React.FC<StoresProps> = ({ user }) => {
           <Search className="w-5 h-5 text-gray-300 absolute left-3 top-2.5" />
         </div>
         <div className="ml-auto text-[10px] font-bold uppercase tracking-widest text-gray-400">
-          Mostrando {filteredStores.length} de {stores.length} lojas
+          {t.stores.showing} {filteredStores.length} {t.stores.of} {stores.length}
         </div>
       </div>
 
       {/* Cards Grid */}
       {loading ? (
-        <div className="text-center py-20 text-gray-400">Carregando parceiros...</div>
+        <div className="text-center py-20 text-gray-400">{t.common.loading}</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredStores.map((store) => (
@@ -80,7 +82,7 @@ const Stores: React.FC<StoresProps> = ({ user }) => {
                   <StoreIcon className="w-6 h-6" />
                 </div>
                 <span className={`px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest border ${store.active ? 'bg-gray-50 text-black border-gray-200' : 'bg-gray-50 text-gray-400 border-gray-200'}`}>
-                  {store.active ? 'Ativa' : 'Inativa'}
+                  {store.active ? t.stores.active : t.stores.inactive}
                 </span>
               </div>
 
@@ -108,7 +110,7 @@ const Stores: React.FC<StoresProps> = ({ user }) => {
                   </div>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-xs text-gray-400">Responsável: {store.contactName}</span>
+                  <span className="text-xs text-gray-400">{t.stores.contact}: {store.contactName}</span>
                 </div>
               </div>
 
@@ -117,10 +119,10 @@ const Stores: React.FC<StoresProps> = ({ user }) => {
 
               <div className="mt-4 pt-2 flex justify-between items-center">
                 <div className="text-[10px] font-bold text-gray-400 bg-gray-50 px-2 py-1 uppercase tracking-widest">
-                  {store.claimsCount} solicitações
+                  {store.claimsCount} {t.stores.requests}
                 </div>
                 <button className="text-sm font-bold text-black hover:text-gray-600 uppercase tracking-widest underline underline-offset-4 decoration-1">
-                  Gerenciar
+                  {t.stores.manage}
                 </button>
               </div>
 
@@ -132,8 +134,8 @@ const Stores: React.FC<StoresProps> = ({ user }) => {
       {!loading && filteredStores.length === 0 && (
         <div className="text-center py-20 bg-gray-50 border border-dashed border-gray-300">
           <StoreIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-black text-black uppercase">Nenhuma loja encontrada</h3>
-          <p className="text-gray-400 font-light">Tente ajustar seus filtros de busca.</p>
+          <h3 className="text-lg font-black text-black uppercase">{t.stores.noStoresFound}</h3>
+          <p className="text-gray-400 font-light">{t.stores.tryAdjustingFilters}</p>
         </div>
       )}
     </div>

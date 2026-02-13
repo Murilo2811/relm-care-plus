@@ -1,6 +1,8 @@
 import { ClaimStatus, Role } from './types';
-import React from 'react';
 
+// REPLACED BY i18n/pt-BR.ts -> status
+// This object is now only for fallback or internal logic if needed,
+// but UI should use t.status[status]
 export const STATUS_LABELS: Record<ClaimStatus, string> = {
   [ClaimStatus.RECEBIDO]: 'Recebido',
   [ClaimStatus.EM_ANALISE]: 'Em Análise',

@@ -1,47 +1,49 @@
 import React, { useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-import { WarrantyClaim } from '../../types';
+import { ClaimStatus, WarrantyClaim } from '../../types';
+import { useStatusLabels } from '../../hooks/useStatusLabels';
+import { useT } from '../../i18n/LanguageContext';
 
 interface StatusDistributionChartProps {
     claims: WarrantyClaim[];
 }
 
 const COLORS = {
-    pending: '#fbbf24', // Amber 400
-    approved: '#34d399', // Emerald 400
-    rejected: '#ef4444', // Red 500
-    info_requested: '#60a5fa', // Blue 400
-};
-
-const STATUS_LABELS: Record<string, string> = {
-    pending: 'Pendente',
-    approved: 'Aprovado',
-    rejected: 'Rejeitado',
-    info_requested: 'Aguardando Info',
+    [ClaimStatus.RECEBIDO]: '#60a5fa', // Blue 400
+    [ClaimStatus.EM_ANALISE]: '#fbbf24', // Amber 400
+    [ClaimStatus.AGUARDANDO_CLIENTE]: '#f97316', // Orange 500
+    [ClaimStatus.AGUARDANDO_LOJA]: '#a855f7', // Purple 500
+    [ClaimStatus.APROVADO]: '#34d399', // Emerald 400
+    [ClaimStatus.REPROVADO]: '#ef4444', // Red 500
+    [ClaimStatus.FINALIZADO]: '#4b5563', // Gray 600
+    [ClaimStatus.CANCELADO]: '#9ca3af', // Gray 400
 };
 
 export const StatusDistributionChart: React.FC<StatusDistributionChartProps> = ({ claims }) => {
+    const statusLabels = useStatusLabels();
+    const { t } = useT();
+
     const data = useMemo(() => {
         const grouped = claims.reduce((acc, claim) => {
-            const status = claim.status || 'pending';
+            const status = claim.status;
             acc[status] = (acc[status] || 0) + 1;
             return acc;
         }, {} as Record<string, number>);
 
         return Object.entries(grouped).map(([status, value]) => ({
-            name: STATUS_LABELS[status] || status,
+            name: statusLabels[status as ClaimStatus] || status,
             value,
-            color: COLORS[status as keyof typeof COLORS] || '#9ca3af',
+            color: COLORS[status as ClaimStatus] || '#9ca3af',
         }));
-    }, [claims]);
+    }, [claims, statusLabels]);
 
     if (claims.length === 0) {
-        return <div className="h-64 flex items-center justify-center text-gray-400">Sem dados para exibir</div>;
+        return <div className="h-64 flex items-center justify-center text-gray-400">{t.reports.noData}</div>;
     }
 
     return (
         <div className="bg-white p-6 shadow-sm border border-gray-100">
-            <h3 className="text-lg font-bold text-gray-800 mb-4">Status dos Chamados</h3>
+            <h3 className="text-lg font-bold text-gray-800 mb-4">{t.reports.statusDistribution}</h3>
             <div className="h-72 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                     <PieChart>

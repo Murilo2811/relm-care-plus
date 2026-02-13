@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { api } from '../services/api';
 import { WarrantyClaim, WarrantyEvent, ClaimStatus } from '../types';
-import { STATUS_COLORS, STATUS_LABELS } from '../constants';
+import { STATUS_COLORS } from '../constants';
 import { Search, ArrowLeft, Shield, Clock, FileText, CheckCircle, XCircle, Flag, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useT } from '../i18n/LanguageContext';
+import { LanguageSelector } from '../components/LanguageSelector';
 
 const TrackClaim = () => {
     const [protocol, setProtocol] = useState('');
@@ -12,6 +14,18 @@ const TrackClaim = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [searched, setSearched] = useState(false);
+    const { t } = useT();
+
+    const STATUS_LABELS: Record<ClaimStatus, string> = {
+        [ClaimStatus.RECEBIDO]: t.status.received,
+        [ClaimStatus.EM_ANALISE]: t.status.inAnalysis,
+        [ClaimStatus.AGUARDANDO_CLIENTE]: t.status.awaitingClient,
+        [ClaimStatus.AGUARDANDO_LOJA]: t.status.awaitingStore,
+        [ClaimStatus.APROVADO]: t.status.approved,
+        [ClaimStatus.REPROVADO]: t.status.rejected,
+        [ClaimStatus.FINALIZADO]: t.status.finished,
+        [ClaimStatus.CANCELADO]: t.status.cancelled,
+    };
 
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -29,10 +43,10 @@ const TrackClaim = () => {
                 const hist = await api.claims.getHistory(result.id);
                 setHistory(hist);
             } else {
-                setError('Protocolo não encontrado. Verifique o número e tente novamente.');
+                setError(t.track.notFoundDesc);
             }
         } catch (err) {
-            setError('Erro ao buscar informações. Tente novamente mais tarde.');
+            setError(t.form.submitError);
         } finally {
             setLoading(false);
         }
@@ -65,10 +79,10 @@ const TrackClaim = () => {
     };
 
     const STEPS = [
-        { label: 'Recebido', icon: FileText },
-        { label: 'Em Análise', icon: Loader2 },
-        { label: 'Resolução', icon: CheckCircle },
-        { label: 'Finalizado', icon: Flag },
+        { label: t.track.stepReceived, icon: FileText },
+        { label: t.track.stepAnalysis, icon: Loader2 },
+        { label: t.track.stepResolution, icon: CheckCircle },
+        { label: t.track.stepFinished, icon: Flag },
     ];
 
     return (
@@ -79,24 +93,27 @@ const TrackClaim = () => {
                     <Link to="/" className="text-2xl font-black italic tracking-tighter text-white hover:opacity-90 uppercase">
                         RELM <span className="not-italic font-normal text-gray-500">CARE+</span>
                     </Link>
-                    <Link to="/" className="flex items-center text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 hover:text-white transition-colors">
-                        <ArrowLeft className="w-4 h-4 mr-2" /> Voltar
-                    </Link>
+                    <div className="flex items-center gap-6">
+                        <LanguageSelector variant="dark" />
+                        <Link to="/" className="flex items-center text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 hover:text-white transition-colors">
+                            <ArrowLeft className="w-4 h-4 mr-2" /> {t.common.back}
+                        </Link>
+                    </div>
                 </div>
             </header>
 
             <main className="max-w-3xl mx-auto p-6 -mt-8">
                 {/* Search Box */}
                 <div className="bg-white shadow-xl p-8 border border-gray-100 mb-8">
-                    <h1 className="text-2xl font-black italic uppercase text-black mb-2">Acompanhar Solicitação</h1>
-                    <p className="text-gray-400 mb-6 font-light">Digite o número do protocolo recebido (ex: HB-2023...)</p>
+                    <h1 className="text-2xl font-black italic uppercase text-black mb-2">{t.track.trackRequest}</h1>
+                    <p className="text-gray-400 mb-6 font-light">{t.track.trackDescription}</p>
 
                     <form onSubmit={handleSearch} className="flex gap-4">
                         <input
                             type="text"
                             value={protocol}
                             onChange={(e) => setProtocol(e.target.value)}
-                            placeholder="Digite o protocolo..."
+                            placeholder={t.track.protocolPlaceholder}
                             className="flex-1 border-b border-gray-200 focus:border-black outline-none py-3 px-4 text-lg font-light rounded-none"
                         />
                         <button
@@ -104,7 +121,7 @@ const TrackClaim = () => {
                             disabled={loading}
                             className="bg-black text-white px-8 font-bold uppercase tracking-widest text-sm hover:bg-zinc-800 transition-colors shadow-lg shadow-gray-200 flex items-center justify-center disabled:opacity-70 rounded-none"
                         >
-                            {loading ? 'Buscando...' : <><Search className="w-5 h-5 mr-2" /> Consultar</>}
+                            {loading ? t.track.searching : <><Search className="w-5 h-5 mr-2" /> {t.track.consult}</>}
                         </button>
                     </form>
                 </div>
@@ -113,7 +130,7 @@ const TrackClaim = () => {
                 {searched && error && (
                     <div className="bg-white shadow-sm p-8 text-center border-l-4 border-black">
                         <Shield className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                        <h3 className="text-lg font-bold text-black mb-2">Protocolo não encontrado</h3>
+                        <h3 className="text-lg font-bold text-black mb-2">{t.track.notFound}</h3>
                         <p className="text-gray-400 font-light">{error}</p>
                     </div>
                 )}
@@ -125,13 +142,13 @@ const TrackClaim = () => {
                         {/* Status Card */}
                         <div className="bg-white shadow-sm p-6 border-l-4 border-black flex justify-between items-center">
                             <div>
-                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Status Atual</p>
+                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{t.track.currentStatus}</p>
                                 <span className={`px-3 py-1 text-lg font-bold inline-block ${STATUS_COLORS[claim.status]}`}>
                                     {STATUS_LABELS[claim.status]}
                                 </span>
                             </div>
                             <div className="text-right">
-                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Data da Solicitação</p>
+                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{t.track.requestDate}</p>
                                 <p className="text-lg font-medium text-black">{new Date(claim.createdAt).toLocaleDateString()}</p>
                             </div>
                         </div>
@@ -183,23 +200,23 @@ const TrackClaim = () => {
                         {/* Product Info */}
                         <div className="bg-white shadow-sm p-6 border border-gray-100">
                             <h3 className="text-[10px] font-black text-black uppercase tracking-widest mb-4 flex items-center">
-                                <Shield className="w-4 h-4 mr-2 text-black" /> Detalhes do Produto
+                                <Shield className="w-4 h-4 mr-2 text-black" /> {t.track.productDetails}
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Produto</p>
+                                    <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">{t.track.product}</p>
                                     <p className="font-medium text-black">{claim.productDescription}</p>
                                 </div>
                                 <div>
-                                    <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Serial Number</p>
+                                    <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">{t.track.serialNumber}</p>
                                     <p className="font-medium text-black font-mono">{claim.serialNumber}</p>
                                 </div>
                                 <div>
-                                    <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Loja de Compra</p>
+                                    <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">{t.track.purchaseStore}</p>
                                     <p className="font-medium text-black">{claim.purchaseStoreName}</p>
                                 </div>
                                 <div>
-                                    <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Última Atualização</p>
+                                    <p className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">{t.track.lastUpdate}</p>
                                     <p className="font-medium text-black">{new Date(claim.updatedAt).toLocaleString()}</p>
                                 </div>
                             </div>
@@ -208,7 +225,7 @@ const TrackClaim = () => {
                         {/* Timeline */}
                         <div className="bg-white shadow-sm p-6 border border-gray-100">
                             <h3 className="text-[10px] font-black text-black uppercase tracking-widest mb-6 flex items-center">
-                                <Clock className="w-4 h-4 mr-2 text-black" /> Histórico de Eventos
+                                <Clock className="w-4 h-4 mr-2 text-black" /> {t.track.eventHistory}
                             </h3>
                             <div className="relative border-l-2 border-gray-100 ml-3 space-y-8">
                                 {history.map((event, idx) => (
@@ -216,7 +233,7 @@ const TrackClaim = () => {
                                         <div className={`absolute -left-[9px] top-0 w-4 h-4 rounded-full border-2 border-white ${idx === 0 ? 'bg-black' : 'bg-gray-300'}`}></div>
                                         <div>
                                             <p className="text-sm font-bold text-black">
-                                                {event.eventType === 'STATUS_CHANGE' ? STATUS_LABELS[event.toStatus!] : 'Atualização'}
+                                                {event.eventType === 'STATUS_CHANGE' ? STATUS_LABELS[event.toStatus!] : t.track.update}
                                             </p>
                                             <p className="text-xs text-gray-400 mt-0.5">
                                                 {new Date(event.createdAt).toLocaleDateString()} às {new Date(event.createdAt).toLocaleTimeString()}
@@ -232,7 +249,7 @@ const TrackClaim = () => {
                                 <div className="relative pl-8">
                                     <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full border-2 border-white bg-gray-300"></div>
                                     <div>
-                                        <p className="text-sm font-bold text-black">Solicitação Aberta</p>
+                                        <p className="text-sm font-bold text-black">{t.track.requestOpened}</p>
                                         <p className="text-xs text-gray-400 mt-0.5">
                                             {new Date(claim.createdAt).toLocaleDateString()}
                                         </p>

@@ -1,8 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ShieldCheck, LogIn, ChevronRight, CheckCircle, Search } from 'lucide-react';
+import { useT } from '../i18n/LanguageContext';
+import { LanguageSelector } from '../components/LanguageSelector';
 
 export default function Home() {
+  const { t } = useT();
+
   return (
     <div className="min-h-screen bg-white flex flex-col font-sans">
       {/* Navbar */}
@@ -11,13 +15,16 @@ export default function Home() {
           <div className="text-2xl font-black italic tracking-tighter text-black uppercase select-none">
             RELM <span className="not-italic font-normal text-gray-500">CARE+</span>
           </div>
-          <Link
-            to="/login"
-            className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 hover:text-black transition-colors flex items-center"
-          >
-            <LogIn className="w-4 h-4 mr-2" />
-            Acesso Restrito
-          </Link>
+          <div className="flex items-center gap-4">
+            <LanguageSelector />
+            <Link
+              to="/login"
+              className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400 hover:text-black transition-colors flex items-center"
+            >
+              <LogIn className="w-4 h-4 mr-2" />
+              {t.common.restrictedAccess}
+            </Link>
+          </div>
         </div>
       </nav>
 
@@ -27,10 +34,10 @@ export default function Home() {
 
           <div className="space-y-4">
             <h1 className="text-5xl font-black text-black tracking-tight sm:text-6xl uppercase italic">
-              Garantia e Suporte <span className="text-gray-400">Relm Bikes</span>
+              {t.home.heroTitle} <span className="text-gray-400">{t.home.heroTitleHighlight}</span>
             </h1>
             <p className="text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed font-light">
-              Central oficial para registro de produtos, abertura de chamados e gestão de garantias para clientes e parceiros autorizados.
+              {t.home.heroSubtitle}
             </p>
           </div>
 
@@ -46,18 +53,18 @@ export default function Home() {
                 <div className="w-14 h-14 bg-gray-50 flex items-center justify-center mb-6 text-black group-hover:bg-black group-hover:text-white transition-colors duration-300">
                   <ShieldCheck className="w-7 h-7" />
                 </div>
-                <h3 className="text-2xl font-black text-black mb-2 uppercase italic">Sou Cliente</h3>
+                <h3 className="text-2xl font-black text-black mb-2 uppercase italic">{t.home.iamClient}</h3>
                 <p className="text-gray-400 leading-relaxed mb-6 font-light">
-                  Registre seu produto ou consulte o andamento de uma solicitação existente.
+                  {t.home.clientDescription}
                 </p>
               </div>
 
               <div className="relative z-10 mt-auto flex flex-col gap-3">
                 <Link to="/register" className="w-full flex items-center justify-between px-4 py-3 bg-black text-white font-bold uppercase tracking-widest text-sm hover:bg-zinc-800 transition-colors">
-                  Registrar Nova <ChevronRight className="w-5 h-5" />
+                  {t.home.registerNew} <ChevronRight className="w-5 h-5" />
                 </Link>
                 <Link to="/track" className="w-full flex items-center justify-between px-4 py-3 bg-gray-100 text-black font-bold uppercase tracking-widest text-sm hover:bg-gray-200 transition-colors">
-                  Consultar Protocolo <Search className="w-5 h-5" />
+                  {t.home.checkProtocol} <Search className="w-5 h-5" />
                 </Link>
               </div>
             </div>
@@ -65,8 +72,8 @@ export default function Home() {
           </div>
 
           <div className="pt-10 flex justify-center space-x-8 text-[10px] font-bold uppercase tracking-widest text-gray-300">
-            <div className="flex items-center"><CheckCircle className="w-4 h-4 mr-2 text-black" /> Processo 100% Digital</div>
-            <div className="flex items-center"><CheckCircle className="w-4 h-4 mr-2 text-black" /> Acompanhamento em Tempo Real</div>
+            <div className="flex items-center"><CheckCircle className="w-4 h-4 mr-2 text-black" /> {t.home.digitalProcess}</div>
+            <div className="flex items-center"><CheckCircle className="w-4 h-4 mr-2 text-black" /> {t.home.realTimeTracking}</div>
           </div>
         </div>
       </main>
@@ -74,11 +81,11 @@ export default function Home() {
       {/* Footer */}
       <footer className="bg-white border-t border-gray-100 py-8">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center text-[10px] font-bold uppercase tracking-widest text-gray-300">
-          <p>© 2024 Relm Bikes. Todos os direitos reservados.</p>
+          <p>{t.common.copyright}</p>
           <div className="flex space-x-6 mt-4 md:mt-0">
-            <a href="#" className="hover:text-black transition-colors">Política de Privacidade</a>
-            <a href="#" className="hover:text-black transition-colors">Termos de Uso</a>
-            <a href="#" className="hover:text-black transition-colors">Suporte</a>
+            <a href="#" className="hover:text-black transition-colors">{t.common.privacyPolicy}</a>
+            <a href="#" className="hover:text-black transition-colors">{t.common.termsOfUse}</a>
+            <a href="#" className="hover:text-black transition-colors">{t.common.support}</a>
           </div>
         </div>
       </footer>

@@ -3,6 +3,8 @@ import { User } from '../types';
 import { api } from '../services/api';
 import { useNavigate, Link } from 'react-router-dom';
 import { LogIn, AlertCircle, ArrowLeft, Lock, Mail } from 'lucide-react';
+import { useT } from '../i18n/LanguageContext';
+import { LanguageSelector } from '../components/LanguageSelector';
 
 interface LoginProps {
   onLogin: (user: User) => void;
@@ -14,6 +16,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { t } = useT();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +27,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       onLogin(user);
       navigate('/admin/dashboard');
     } catch (err) {
-      setError('Credenciais inválidas. Verifique seu e-mail e senha.');
+      setError(t.login.invalidCredentials);
     } finally {
       setLoading(false);
     }
@@ -33,15 +36,18 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   return (
     <div className="min-h-screen bg-white flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="flex justify-center mb-4">
+          <LanguageSelector />
+        </div>
         <Link to="/" className="flex justify-center items-center mb-6 text-gray-400 hover:text-black transition-colors group text-[10px] font-bold uppercase tracking-[0.2em]">
-          <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" /> Voltar ao início
+          <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" /> {t.login.backToStart}
         </Link>
         <div className="text-center">
           <h2 className="text-3xl font-black italic tracking-tighter text-black uppercase">
             RELM <span className="text-gray-400 not-italic font-normal">CARE+</span>
           </h2>
           <p className="mt-2 text-center text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">
-            Acesso administrativo e parceiros
+            {t.login.adminAccess}
           </p>
         </div>
       </div>
@@ -51,7 +57,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="email" className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">
-                Email Corporativo
+                {t.login.corporateEmail}
               </label>
               <div className="mt-1 relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -66,14 +72,14 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="appearance-none block w-full pl-10 pr-3 py-3 border-b border-gray-200 focus:border-black placeholder-gray-300 focus:outline-none sm:text-sm transition-all bg-white rounded-none"
-                  placeholder="seu@email.com"
+                  placeholder={t.login.emailPlaceholder}
                 />
               </div>
             </div>
 
             <div>
               <label htmlFor="password" className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">
-                Senha
+                {t.login.password}
               </label>
               <div className="mt-1 relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -88,7 +94,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="appearance-none block w-full pl-10 pr-3 py-3 border-b border-gray-200 focus:border-black placeholder-gray-300 focus:outline-none sm:text-sm transition-all bg-white rounded-none"
-                  placeholder="••••••••"
+                  placeholder={t.login.passwordPlaceholder}
                 />
               </div>
             </div>
@@ -112,11 +118,11 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Autenticando...
+                    {t.login.authenticating}
                   </span>
                 ) : (
                   <span className="flex items-center">
-                    <LogIn className="w-4 h-4 mr-2" /> Entrar
+                    <LogIn className="w-4 h-4 mr-2" /> {t.login.loginButton}
                   </span>
                 )}
               </button>
@@ -124,7 +130,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           </form>
         </div>
         <p className="text-center text-[10px] font-bold uppercase tracking-widest text-gray-300 mt-8">
-          &copy; 2024 Relm Bikes. Todos os direitos reservados.
+          {t.common.copyright}
         </p>
       </div>
     </div>

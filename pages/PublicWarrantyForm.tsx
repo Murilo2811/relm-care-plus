@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { api } from '../services/api';
 import { CheckCircle, ArrowRight, ArrowLeft, Info } from 'lucide-react';
+import { useT } from '../i18n/LanguageContext';
+import { LanguageSelector } from '../components/LanguageSelector';
 
 const PublicWarrantyForm = () => {
   const [step, setStep] = useState(1);
@@ -18,6 +20,7 @@ const PublicWarrantyForm = () => {
   });
   const [protocol, setProtocol] = useState('');
   const [loading, setLoading] = useState(false);
+  const { t } = useT();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +33,7 @@ const PublicWarrantyForm = () => {
       setProtocol(res.protocolNumber);
       setStep(3);
     } catch (error) {
-      alert('Erro ao enviar. Tente novamente.');
+      alert(t.form.submitError);
     } finally {
       setLoading(false);
     }
@@ -47,26 +50,26 @@ const PublicWarrantyForm = () => {
         <div className="max-w-xl w-full text-center">
           <CheckCircle className="w-12 h-12 text-black mx-auto mb-6" strokeWidth={1.5} />
           <h1 className="text-4xl font-black uppercase tracking-tight text-black mb-4 italic">
-            Registration Complete
+            {t.form.registrationComplete}
           </h1>
           <p className="text-gray-500 font-light text-lg mb-10">
-            Sua solicitação foi registrada com sucesso sob o protocolo abaixo.
+            {t.form.registrationCompleteDesc}
           </p>
 
           <div className="border border-gray-100 p-8 mb-10 bg-gray-50">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Protocol Reference</p>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">{t.form.protocolReference}</p>
             <p className="text-3xl font-bold tracking-tighter text-black">{protocol}</p>
           </div>
 
           <p className="text-sm text-gray-400 font-light mb-8">
-            Um consultor entrará em contato em breve via e-mail ou WhatsApp.
+            {t.form.consultantContact}
           </p>
 
           <button
             onClick={() => window.location.reload()}
             className="px-10 py-4 bg-black text-white text-sm font-bold uppercase tracking-widest hover:bg-gray-800 transition-all"
           >
-            Back to Home
+            {t.common.backToHome}
           </button>
         </div>
       </div>
@@ -75,23 +78,16 @@ const PublicWarrantyForm = () => {
 
   return (
     <div className="min-h-screen bg-white font-inter text-black antialiased">
-      {/* Factor Style Header */}
+      {/* Header */}
       <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-8">
             <h1 className="text-3xl font-black italic tracking-tighter hover:opacity-80 transition-opacity cursor-pointer">
-              FACTOR
+              RELM <span className="not-italic font-normal text-gray-400">CARE+</span>
             </h1>
-            <nav className="hidden lg:flex space-x-6 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">
-              <span className="hover:text-black cursor-pointer">Bikes</span>
-              <span className="hover:text-black cursor-pointer">Equipment</span>
-              <span className="hover:text-black cursor-pointer">Emporium</span>
-              <span className="hover:text-black cursor-pointer">Prisma Studio</span>
-            </nav>
           </div>
-          <div className="flex items-center space-x-6 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-400">
-            <span className="hover:text-black cursor-pointer hidden sm:block">Find a Retailer</span>
-            <span className="hover:text-black cursor-pointer">Region 🇺🇸</span>
+          <div className="flex items-center space-x-6">
+            <LanguageSelector />
           </div>
         </div>
       </header>
@@ -103,16 +99,18 @@ const PublicWarrantyForm = () => {
           <div className="lg:col-span-5 space-y-12">
             <div>
               <h1 className="text-5xl lg:text-6xl font-black uppercase italic tracking-tighter leading-none mb-8">
-                Product <br /> Registration
+                {t.form.productRegistration.split(' ').map((word, i) => (
+                  <React.Fragment key={i}>{word}<br /></React.Fragment>
+                ))}
               </h1>
               <p className="text-gray-500 font-light leading-relaxed text-lg">
-                To qualify for Factor’s Limited Lifetime Warranty on bicycles and framesets, the original owner must register their product within 15 days of the purchase date.
+                {t.form.productRegistrationDesc}
               </p>
             </div>
 
             <div className="pt-12 border-t border-gray-100">
               <h2 className="text-2xl font-black uppercase italic tracking-tight mb-6 flex items-center">
-                Finding Your Serial Code
+                {t.form.findingSerialCode}
               </h2>
               <div className="aspect-[4/3] bg-gray-50 mb-6 flex items-center justify-center relative overflow-hidden group">
                 <img
@@ -123,12 +121,12 @@ const PublicWarrantyForm = () => {
                 <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-white/40">
                   <div className="w-16 h-1 bg-black mb-4"></div>
                   <p className="text-xs font-bold uppercase tracking-widest text-black max-w-xs">
-                    Look on the underside of the bottom bracket where you will find the barcode.
+                    {t.form.serialCodeHint}
                   </p>
                 </div>
               </div>
               <p className="text-sm text-gray-500 font-light leading-relaxed">
-                Type that code into the space provided to register your frame with Factor. All product information will be verified to ensure authenticity.
+                {t.form.serialCodeDesc}
               </p>
             </div>
           </div>
@@ -141,7 +139,7 @@ const PublicWarrantyForm = () => {
                 <div className={`h-1 flex-1 ${step >= 1 ? 'bg-black' : 'bg-gray-100'}`}></div>
                 <div className={`h-1 flex-1 ${step >= 2 ? 'bg-black' : 'bg-gray-100'}`}></div>
                 <span className="ml-4 text-[10px] font-black uppercase tracking-widest text-gray-400">
-                  Step 0{step} / 02
+                  {t.form.step} 0{step} / 02
                 </span>
               </div>
 
@@ -149,12 +147,12 @@ const PublicWarrantyForm = () => {
                 {step === 1 && (
                   <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <h2 className="text-xl font-black uppercase italic tracking-widest border-b border-black pb-4 inline-block">
-                      Personal Information
+                      {t.form.personalInfo}
                     </h2>
 
                     <div className="space-y-6">
                       <div className="group">
-                        <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 group-focus-within:text-black transition-colors">Nome Completo</label>
+                        <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 group-focus-within:text-black transition-colors">{t.form.fullName}</label>
                         <input
                           name="customerName"
                           required
@@ -166,7 +164,7 @@ const PublicWarrantyForm = () => {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="group">
-                          <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 group-focus-within:text-black transition-colors">Telefone / WhatsApp</label>
+                          <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 group-focus-within:text-black transition-colors">{t.form.phoneWhatsapp}</label>
                           <input
                             name="customerPhone"
                             required
@@ -177,7 +175,7 @@ const PublicWarrantyForm = () => {
                           />
                         </div>
                         <div className="group">
-                          <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 group-focus-within:text-black transition-colors">E-mail</label>
+                          <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 group-focus-within:text-black transition-colors">{t.form.email}</label>
                           <input
                             name="customerEmail"
                             type="email"
@@ -195,7 +193,7 @@ const PublicWarrantyForm = () => {
                         onClick={() => setStep(2)}
                         className="group flex items-center justify-between w-full bg-black text-white px-8 py-5 text-sm font-bold uppercase tracking-[0.2em] hover:bg-zinc-900 transition-all rounded-none"
                       >
-                        Product Details
+                        {t.form.productDetails}
                         <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" strokeWidth={3} />
                       </button>
                     </div>
@@ -206,16 +204,16 @@ const PublicWarrantyForm = () => {
                   <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <div className="space-y-8">
                       <h2 className="text-xl font-black uppercase italic tracking-widest border-b border-black pb-4 inline-block">
-                        Technical Specs
+                        {t.form.technicalSpecs}
                       </h2>
 
                       <div className="space-y-8">
                         <div className="group">
-                          <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 group-focus-within:text-black transition-colors">Modelo da Bike / Produto</label>
+                          <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 group-focus-within:text-black transition-colors">{t.form.bikeModel}</label>
                           <input
                             name="productDescription"
                             required
-                            placeholder="Ex: Factor Ostro VAM"
+                            placeholder={t.form.bikeModelPlaceholder}
                             className="w-full bg-white border-b border-gray-200 focus:border-black outline-none py-3 text-lg font-light transition-all rounded-none"
                             value={formData.productDescription}
                             onChange={handleChange}
@@ -225,7 +223,7 @@ const PublicWarrantyForm = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                           <div className="group">
                             <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 group-focus-within:text-black transition-colors flex items-center">
-                              Número de Série
+                              {t.form.serialNumber}
                               <Info className="w-3 h-3 ml-2 text-gray-300" />
                             </label>
                             <input
@@ -237,7 +235,7 @@ const PublicWarrantyForm = () => {
                             />
                           </div>
                           <div className="group">
-                            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 group-focus-within:text-black transition-colors">Nota Fiscal (Invoice)</label>
+                            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 group-focus-within:text-black transition-colors">{t.form.invoice}</label>
                             <input
                               name="invoiceNumber"
                               required
@@ -252,12 +250,12 @@ const PublicWarrantyForm = () => {
 
                     <div className="space-y-8 pt-6">
                       <h2 className="text-xl font-black uppercase italic tracking-widest border-b border-black pb-4 inline-block">
-                        Purchase Origin
+                        {t.form.purchaseOrigin}
                       </h2>
 
                       <div className="space-y-8">
                         <div className="group">
-                          <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 group-focus-within:text-black transition-colors">Nome da Loja Autorizada</label>
+                          <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 group-focus-within:text-black transition-colors">{t.form.authorizedStore}</label>
                           <input
                             name="purchaseStoreName"
                             required
@@ -268,7 +266,7 @@ const PublicWarrantyForm = () => {
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                           <div className="group">
-                            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 group-focus-within:text-black transition-colors">Cidade</label>
+                            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 group-focus-within:text-black transition-colors">{t.form.city}</label>
                             <input
                               name="purchaseStoreCity"
                               className="w-full bg-white border-b border-gray-200 focus:border-black outline-none py-3 text-lg font-light transition-all rounded-none"
@@ -277,7 +275,7 @@ const PublicWarrantyForm = () => {
                             />
                           </div>
                           <div className="group">
-                            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 group-focus-within:text-black transition-colors">Data da Compra</label>
+                            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 group-focus-within:text-black transition-colors">{t.form.purchaseDate}</label>
                             <input
                               type="date"
                               name="purchaseDate"
@@ -304,7 +302,7 @@ const PublicWarrantyForm = () => {
                           />
                         </div>
                         <div className="ml-4 text-[11px] text-gray-400 font-medium leading-relaxed group-hover:text-gray-600 transition-colors">
-                          Li e concordo com a <span className="text-black font-bold underline underline-offset-4 decoration-1">Política de Privacidade</span> e autorizo o tratamento dos dados para fins de garantia conforme termos da Factor Bikes.
+                          {t.form.policyConsentPrefix}<span className="text-black font-bold underline underline-offset-4 decoration-1">{t.form.policyConsentLink}</span>{t.form.policyConsentSuffix}
                         </div>
                       </label>
 
@@ -321,7 +319,7 @@ const PublicWarrantyForm = () => {
                           disabled={loading}
                           className="flex-1 bg-black text-white px-8 py-5 text-sm font-bold uppercase tracking-[0.2em] hover:bg-zinc-900 transition-all rounded-none disabled:opacity-50"
                         >
-                          {loading ? 'Processing...' : 'Complete Registration'}
+                          {loading ? t.form.processing : t.form.completeRegistration}
                         </button>
                       </div>
                     </div>
@@ -335,12 +333,11 @@ const PublicWarrantyForm = () => {
 
       <footer className="max-w-7xl mx-auto px-6 py-12 border-t border-gray-50 flex flex-col md:flex-row justify-between items-center gap-6">
         <p className="text-[10px] font-black uppercase tracking-widest text-gray-300">
-          © 2024 Relm Care+ × Factor Bikes
+          {t.common.copyright}
         </p>
         <div className="flex space-x-8 text-[10px] font-black uppercase tracking-widest text-gray-300">
-          <span className="hover:text-black cursor-pointer transition-colors">Privacy</span>
-          <span className="hover:text-black cursor-pointer transition-colors">Terms</span>
-          <span className="hover:text-black cursor-pointer transition-colors">Cookie Policy</span>
+          <span className="hover:text-black cursor-pointer transition-colors">{t.common.privacyPolicy}</span>
+          <span className="hover:text-black cursor-pointer transition-colors">{t.common.termsOfUse}</span>
         </div>
       </footer>
     </div>

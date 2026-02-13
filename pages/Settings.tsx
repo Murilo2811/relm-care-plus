@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { User } from '../types';
 import { api } from '../services/api';
 import { Settings as SettingsIcon, Bell, Shield, Globe, Info, Save, CheckCircle } from 'lucide-react';
+import { useT } from '../i18n/LanguageContext';
 
 interface SettingsProps {
    user: User;
@@ -11,6 +12,7 @@ const Settings: React.FC<SettingsProps> = ({ user }) => {
    const [settings, setSettings] = useState<Record<string, string>>({});
    const [loading, setLoading] = useState(true);
    const [saved, setSaved] = useState(false);
+   const { t } = useT();
 
    useEffect(() => {
       const load = async () => {
@@ -37,34 +39,34 @@ const Settings: React.FC<SettingsProps> = ({ user }) => {
             <div>
                <h1 className="text-2xl font-black text-black uppercase italic flex items-center">
                   <SettingsIcon className="w-6 h-6 mr-3 text-black" />
-                  Configurações
+                  {t.settings.settingsTitle}
                </h1>
-               <p className="text-gray-400 text-sm mt-1 font-light">Ajustes operacionais gerais do sistema.</p>
+               <p className="text-gray-400 text-sm mt-1 font-light">{t.settings.settingsDesc}</p>
             </div>
             <button
                onClick={handleSave}
                className="flex items-center px-6 py-2 bg-black text-white hover:bg-zinc-800 transition-colors text-sm font-bold uppercase tracking-widest"
             >
-               {saved ? <><CheckCircle className="w-4 h-4 mr-2" /> Salvo!</> : <><Save className="w-4 h-4 mr-2" /> Salvar</>}
+               {saved ? <><CheckCircle className="w-4 h-4 mr-2" /> {t.settings.saved}</> : <><Save className="w-4 h-4 mr-2" /> {t.settings.save}</>}
             </button>
          </div>
 
          {loading ? (
-            <div className="text-gray-400">Carregando...</div>
+            <div className="text-gray-400">{t.common.loading}</div>
          ) : (
             <div className="space-y-8">
                {/* Notifications Section */}
                <section className="bg-white shadow-sm border border-gray-100 p-6">
                   <h2 className="text-sm font-black text-black uppercase tracking-widest flex items-center mb-6">
                      <Bell className="w-5 h-5 mr-2 text-black" />
-                     Notificações
+                     {t.settings.notifications}
                   </h2>
 
                   <div className="space-y-6">
                      <div className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
                         <div>
-                           <h3 className="text-sm font-semibold text-black">Alertas por Email</h3>
-                           <p className="text-sm text-gray-400 font-light">Receber notificações de novo chamado por email.</p>
+                           <h3 className="text-sm font-semibold text-black">{t.settings.emailAlerts}</h3>
+                           <p className="text-sm text-gray-400 font-light">{t.settings.emailAlertsDesc}</p>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
                            <input type="checkbox" className="sr-only peer" defaultChecked />
@@ -74,8 +76,8 @@ const Settings: React.FC<SettingsProps> = ({ user }) => {
 
                      <div className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
                         <div>
-                           <h3 className="text-sm font-semibold text-black">Alertas de Status</h3>
-                           <p className="text-sm text-gray-400 font-light">Notificar quando um chamado mudar de status.</p>
+                           <h3 className="text-sm font-semibold text-black">{t.settings.statusAlerts}</h3>
+                           <p className="text-sm text-gray-400 font-light">{t.settings.statusAlertsDesc}</p>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
                            <input type="checkbox" className="sr-only peer" defaultChecked />
@@ -89,12 +91,12 @@ const Settings: React.FC<SettingsProps> = ({ user }) => {
                <section className="bg-white shadow-sm border border-gray-100 p-6">
                   <h2 className="text-sm font-black text-black uppercase tracking-widest flex items-center mb-6">
                      <Shield className="w-5 h-5 mr-2 text-black" />
-                     Segurança
+                     {t.settings.security}
                   </h2>
 
                   <div className="space-y-4">
                      <div>
-                        <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">Prazo Máximo de Garantia (dias)</label>
+                        <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">{t.settings.warrantyDays}</label>
                         <input
                            type="number"
                            className="w-full md:w-48 border-b border-gray-200 focus:border-black outline-none py-2 rounded-none bg-white"
@@ -103,7 +105,7 @@ const Settings: React.FC<SettingsProps> = ({ user }) => {
                         />
                      </div>
                      <div>
-                        <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">Tempo limite para resposta da loja (horas)</label>
+                        <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">{t.settings.responseTime}</label>
                         <input
                            type="number"
                            className="w-full md:w-48 border-b border-gray-200 focus:border-black outline-none py-2 rounded-none bg-white"
@@ -118,11 +120,11 @@ const Settings: React.FC<SettingsProps> = ({ user }) => {
                <section className="bg-white shadow-sm border border-gray-100 p-6">
                   <h2 className="text-sm font-black text-black uppercase tracking-widest flex items-center mb-6">
                      <Globe className="w-5 h-5 mr-2 text-black" />
-                     Geral
+                     {t.layout.general}
                   </h2>
                   <div className="space-y-4">
                      <div>
-                        <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">Nome da Empresa</label>
+                        <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">{t.settings.companyName}</label>
                         <input
                            type="text"
                            className="w-full border-b border-gray-200 focus:border-black outline-none py-2 rounded-none bg-white"
@@ -131,7 +133,7 @@ const Settings: React.FC<SettingsProps> = ({ user }) => {
                         />
                      </div>
                      <div>
-                        <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">Email de Suporte</label>
+                        <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">{t.settings.supportEmail}</label>
                         <input
                            type="email"
                            className="w-full border-b border-gray-200 focus:border-black outline-none py-2 rounded-none bg-white"
@@ -146,10 +148,9 @@ const Settings: React.FC<SettingsProps> = ({ user }) => {
                <div className="bg-gray-50 border border-gray-200 p-6 flex items-start">
                   <Info className="w-5 h-5 text-gray-400 mr-3 mt-0.5 flex-shrink-0" />
                   <div>
-                     <h4 className="text-sm font-bold text-black">Sobre as configurações</h4>
+                     <h4 className="text-sm font-bold text-black">{t.settings.aboutConfig}</h4>
                      <p className="text-sm text-gray-400 font-light mt-1">
-                        Alterações nestas configurações afetam toda a operação da plataforma.
-                        Certifique-se de salvar após realizar mudanças.
+                        {t.settings.configWarning}
                      </p>
                   </div>
                </div>
