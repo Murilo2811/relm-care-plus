@@ -1,1 +1,5 @@
 @import "tailwindcss";
+
+@theme {
+    --color-antique-brass: #C57C5C;
+}
