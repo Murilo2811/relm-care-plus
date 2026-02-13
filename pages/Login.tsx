@@ -132,6 +132,9 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         <p className="text-center text-[10px] font-bold uppercase tracking-widest text-gray-300 mt-8">
           {t.common.copyright}
         </p>
+        <p className="text-center text-[8px] font-bold uppercase tracking-[0.3em] text-gray-200 mt-2">
+          created by MLF
+        </p>
       </div>
     </div>
   );
