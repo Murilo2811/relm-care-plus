@@ -22,7 +22,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
           <h1 className="text-2xl font-bold text-red-500">Relm Care+</h1>
           <p className="text-xs text-gray-500 mt-1">Gestão de Garantia</p>
         </div>
-        
+
         <nav className="flex-1 p-4 space-y-2">
           <Link to="/admin/dashboard" className={`flex items-center p-3 rounded-lg transition-colors ${isActive('dashboard')}`}>
             <LayoutDashboard className="w-5 h-5 mr-3" />
@@ -37,15 +37,15 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
           )}
 
           <div className="text-xs font-semibold text-gray-500 uppercase mt-6 mb-2 ml-3">Geral</div>
-          <button className={`w-full flex items-center p-3 rounded-lg transition-colors text-gray-300 hover:bg-gray-800`}>
+          <Link to="/admin/reports" className={`flex items-center p-3 rounded-lg transition-colors ${isActive('reports')}`}>
             <FileText className="w-5 h-5 mr-3" />
             Relatórios
-          </button>
-          
+          </Link>
+
           {(user.role === Role.ADMIN_RELM) && (
             <>
               <div className="text-xs font-semibold text-gray-500 uppercase mt-6 mb-2 ml-3">Admin</div>
-               <Link to="/admin/users" className={`flex items-center p-3 rounded-lg transition-colors ${isActive('users')}`}>
+              <Link to="/admin/users" className={`flex items-center p-3 rounded-lg transition-colors ${isActive('users')}`}>
                 <UserIcon className="w-5 h-5 mr-3" />
                 Usuários
               </Link>

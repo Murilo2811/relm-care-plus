@@ -10,6 +10,7 @@ import Home from './pages/Home';
 import Stores from './pages/Stores';
 import Users from './pages/Users';
 import Settings from './pages/Settings';
+import Reports from './pages/Reports';
 import { Layout } from './components/Layout';
 
 interface ProtectedRouteProps {
@@ -30,14 +31,14 @@ export default function App() {
       <Routes>
         {/* Landing Page */}
         <Route path="/" element={<Home />} />
-        
+
         {/* Public Routes */}
         <Route path="/register" element={<PublicWarrantyForm />} />
         <Route path="/track" element={<TrackClaim />} />
-        
+
         {/* Login Page */}
         <Route path="/login" element={<Login onLogin={setUser} />} />
-        
+
         {/* Protected Admin Routes */}
         <Route path="/admin/*" element={
           <ProtectedRoute user={user}>
@@ -47,6 +48,7 @@ export default function App() {
                 <Route path="stores" element={<Stores user={user!} />} />
                 <Route path="users" element={<Users user={user!} />} />
                 <Route path="settings" element={<Settings user={user!} />} />
+                <Route path="reports" element={<Reports user={user!} />} />
                 <Route path="claims/:id" element={<ClaimDetail user={user!} />} />
                 <Route path="*" element={<Navigate to="dashboard" />} />
               </Routes>

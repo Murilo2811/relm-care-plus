@@ -6,59 +6,56 @@ test('Submit Warranty Claim', async ({ page }) => {
     // Increase timeout for this test
     test.setTimeout(60000);
 
-    console.log('Navigating to localhost:5173...');
+    // Navigate to /#/register for HashRouter
+    const BASE_URL = process.env.BASE_URL || 'https://relm-care.vercel.app';
+    const targetUrl = BASE_URL.endsWith('/') ? `${BASE_URL}#/register` : `${BASE_URL}/#/register`;
+
+    console.log(`Navigating to ${targetUrl}...`);
     try {
-        await page.goto('http://localhost:3000', { timeout: 15000 });
+        await page.goto(targetUrl, { timeout: 15000 });
     } catch (e) {
         console.error('Navigation failed:', e);
-        // Take screenshot if navigation fails/times out
         await page.screenshot({ path: 'tests/nav_failure.png' });
         throw e;
     }
 
-    // Debug: Print page title and content to verify we are on the right page
     console.log('Page Title:', await page.title());
 
-    // Wait for the form or a key element to be visible
-    console.log('Waiting for form elements...');
-    try {
-        // Trying to wait for "Nome Completo" label
-        await expect(page.getByLabel('Nome Completo')).toBeVisible({ timeout: 10000 });
-    } catch (e) {
-        console.error('Form element not found. Taking screenshot.');
-        await page.screenshot({ path: 'tests/form_not_found.png' });
-        console.log('Page content length:', (await page.content()).length);
-        throw e;
-    }
+    // Step 1: Personal Data
+    console.log('Filling Step 1...');
+    await expect(page.locator('input[name="customerName"]')).toBeVisible({ timeout: 10000 });
+    await page.locator('input[name="customerName"]').fill('Usuário Browser Real');
+    await page.locator('input[name="customerPhone"]').fill('11999998888');
+    await page.locator('input[name="customerEmail"]').fill('browser@teste.com');
 
-    console.log('Filling form...');
-    await page.getByLabel('Nome Completo').fill('Usuário Browser Real');
-    await page.getByLabel('Email').fill('browser@teste.com');
-    await page.getByLabel('Telefone').fill('11999998888');
+    console.log('Going to Step 2...');
+    await page.getByRole('button', { name: 'Próximo Passo' }).click();
 
-    // Select Item Type
-    // Trying a more generic selector if label fails or using selectOption if it's a select
-    // Check if it's a select or input
-    const typeInput = page.getByLabel('Tipo de Item');
-    try {
-        await typeInput.selectOption({ label: 'Bicicleta' });
-    } catch {
-        await typeInput.fill('Bicicleta');
-    }
+    // Step 2: Product Data
+    console.log('Filling Step 2...');
+    await expect(page.locator('input[name="productDescription"]')).toBeVisible();
+    await page.locator('input[name="productDescription"]').fill('Relm Speedster 300');
+    await page.locator('input[name="serialNumber"]').fill('TEST-PROD-REAL-001');
+    await page.locator('input[name="invoiceNumber"]').fill('NF-123456');
+    await page.locator('input[name="purchaseStoreName"]').fill('Loja Exemplo SP');
+    await page.locator('input[name="purchaseStoreCity"]').fill('São Paulo');
+    await page.locator('input[name="purchaseDate"]').fill('2024-01-15');
 
-    await page.getByLabel('Descrição do Produto').fill('Bicicleta de Teste Automatizado');
-    await page.getByLabel('Número de Série').fill('BROWSER-AUTO-123');
+    // Policy Checkbox
+    console.log('Accepting policy...');
+    // Checkbox has id="policy" and label htmlFor="policy", so getByLabel works with regex
+    await page.getByLabel(/Li e concordo/).check();
 
+    // Submit
     console.log('Submitting...');
-    await page.getByRole('button', { name: 'Solicitar Garantia' }).click();
+    await page.getByRole('button', { name: 'Registrar Garantia' }).click();
 
     console.log('Waiting for success message...');
-    // 4. Verify Success and Capture Protocol
-    const successMessage = page.getByText('Solicitação enviada com sucesso');
-    await expect(successMessage).toBeVisible({ timeout: 15000 });
+    const successMessage = page.getByText('Solicitação Recebida!');
+    await expect(successMessage).toBeVisible({ timeout: 20000 });
 
-    // Extract Protocol Number
-    const protocolElement = page.locator('text=/HB-\\d{8}-\\d{4}/');
+    // Extract Protocol
+    const protocolElement = page.locator('p.text-2xl.font-mono');
     await expect(protocolElement).toBeVisible();
 
     const protocolText = await protocolElement.innerText();
