@@ -32,20 +32,20 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
         </div>
 
         <nav className="flex-1 p-4 space-y-1 overflow-y-auto hidden md:block">
-          <Link to="/admin/dashboard" className={`flex items-center p-3 transition-colors text-sm font-medium ${isActive('dashboard')}`}>
+          <Link to="/admin/dashboard" className={`flex items-center p-4 transition-colors text-sm font-medium ${isActive('dashboard')}`}>
             <LayoutDashboard className="w-5 h-5 mr-3" />
             {t.layout.dashboard}
           </Link>
 
           {(user.role === Role.ADMIN_RELM || user.role === Role.GERENTE_RELM) && (
-            <Link to="/admin/stores" className={`flex items-center p-3 transition-colors text-sm font-medium ${isActive('stores')}`}>
+            <Link to="/admin/stores" className={`flex items-center p-4 transition-colors text-sm font-medium ${isActive('stores')}`}>
               <Store className="w-5 h-5 mr-3" />
               {t.layout.stores}
             </Link>
           )}
 
           <div className="text-[10px] font-black text-gray-600 uppercase tracking-widest mt-6 mb-2 ml-3">{t.layout.general}</div>
-          <Link to="/admin/reports" className={`flex items-center p-3 transition-colors text-sm font-medium ${isActive('reports')}`}>
+          <Link to="/admin/reports" className={`flex items-center p-4 transition-colors text-sm font-medium ${isActive('reports')}`}>
             <FileText className="w-5 h-5 mr-3" />
             {t.layout.reports}
           </Link>
@@ -53,11 +53,11 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
           {(user.role === Role.ADMIN_RELM) && (
             <>
               <div className="text-[10px] font-black text-gray-600 uppercase tracking-widest mt-6 mb-2 ml-3">{t.layout.admin}</div>
-              <Link to="/admin/users" className={`flex items-center p-3 transition-colors text-sm font-medium ${isActive('users')}`}>
+              <Link to="/admin/users" className={`flex items-center p-4 transition-colors text-sm font-medium ${isActive('users')}`}>
                 <UserIcon className="w-5 h-5 mr-3" />
                 {t.layout.users}
               </Link>
-              <Link to="/admin/settings" className={`flex items-center p-3 transition-colors text-sm font-medium ${isActive('settings')}`}>
+              <Link to="/admin/settings" className={`flex items-center p-4 transition-colors text-sm font-medium ${isActive('settings')}`}>
                 <Settings className="w-5 h-5 mr-3" />
                 {t.layout.settings}
               </Link>
@@ -80,7 +80,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, user, onLogout }) => {
               <p className="text-[10px] text-gray-500 uppercase tracking-wider font-bold truncate">{user.role}</p>
             </div>
           </div>
-          <button onClick={onLogout} className="w-full flex items-center justify-center p-2 text-sm text-gray-500 hover:text-white transition-colors">
+          <button onClick={onLogout} className="w-full flex items-center justify-center p-4 text-sm text-gray-500 hover:text-white transition-colors">
             <LogOut className="w-4 h-4 mr-2" />
             {t.layout.logout}
           </button>

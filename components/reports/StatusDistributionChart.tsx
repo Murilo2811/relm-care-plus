@@ -12,7 +12,7 @@ const COLORS = {
     [ClaimStatus.RECEBIDO]: '#60a5fa', // Blue 400
     [ClaimStatus.EM_ANALISE]: '#fbbf24', // Amber 400
     [ClaimStatus.AGUARDANDO_CLIENTE]: '#f97316', // Orange 500
-    [ClaimStatus.AGUARDANDO_LOJA]: '#a855f7', // Purple 500
+    [ClaimStatus.AGUARDANDO_LOJA]: '#14b8a6', // Teal 500
     [ClaimStatus.APROVADO]: '#34d399', // Emerald 400
     [ClaimStatus.REPROVADO]: '#ef4444', // Red 500
     [ClaimStatus.FINALIZADO]: '#4b5563', // Gray 600

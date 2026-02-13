@@ -243,8 +243,33 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 let supabase: SupabaseClient;
 
-if (!USE_MOCK && supabaseUrl && supabaseKey) {
-  supabase = createClient(supabaseUrl, supabaseKey);
+// DEBUG: Log Environment Variables (Masked Key)
+console.log('Supabase Config:', {
+  url: supabaseUrl ? supabaseUrl : 'MISSING',
+  key: supabaseKey ? (supabaseKey.substring(0, 10) + '...') : 'MISSING',
+  useMock: USE_MOCK
+});
+
+if (!USE_MOCK) {
+  if (!supabaseUrl || !supabaseKey) {
+    console.error('CRITICAL: VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY is missing!');
+    // Fallback to avoid crash, but API calls will fail gracefully
+    throw new Error('Supabase configuration missing.');
+  }
+
+  try {
+    supabase = createClient(supabaseUrl, supabaseKey, {
+      realtime: { params: { eventsPerSecond: 0 } },
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: false
+      }
+    });
+    console.log('Supabase Client Initialized Successfully');
+  } catch (error) {
+    console.error('Failed to initialize Supabase client:', error);
+  }
 }
 
 const RemoteApi = {
@@ -367,6 +392,8 @@ const RemoteApi = {
           invoiceNumber: c.invoice_number,
           purchaseDate: c.purchase_date,
           purchaseStoreName: c.purchase_store_name,
+          purchaseStoreCity: c.purchase_city,
+          purchaseStoreState: c.purchase_state,
           storeId: c.store_id,
           linkStatus: c.link_status as LinkStatus,
           status: c.status as ClaimStatus,
@@ -405,6 +432,8 @@ const RemoteApi = {
         invoiceNumber: c.invoice_number,
         purchaseDate: c.purchase_date,
         purchaseStoreName: c.purchase_store_name,
+        purchaseStoreCity: c.purchase_city,
+        purchaseStoreState: c.purchase_state,
         storeId: c.store_id,
         linkStatus: c.link_status as LinkStatus,
         status: c.status as ClaimStatus,
@@ -433,6 +462,8 @@ const RemoteApi = {
         invoiceNumber: c.invoice_number,
         purchaseDate: c.purchase_date,
         purchaseStoreName: c.purchase_store_name,
+        purchaseStoreCity: c.purchase_city,
+        purchaseStoreState: c.purchase_state,
         storeId: c.store_id,
         linkStatus: c.link_status as LinkStatus,
         status: c.status as ClaimStatus,

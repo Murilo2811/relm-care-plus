@@ -54,6 +54,7 @@ export default function App() {
                   <Route path="settings" element={<Settings user={user!} />} />
                   <Route path="reports" element={<Reports user={user!} />} />
                   <Route path="claims/:id" element={<ClaimDetail user={user!} />} />
+                  <Route path="reports" element={<Reports user={user!} />} />
                   <Route path="*" element={<Navigate to="dashboard" />} />
                 </Routes>
               </Layout>
