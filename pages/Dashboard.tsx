@@ -50,12 +50,15 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-black text-black uppercase italic">{t.dashboard.overview}</h1>
-        {user.role !== Role.LOJA && (
-          <button className="flex items-center px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors text-sm font-bold uppercase tracking-widest">
-            <Download className="w-4 h-4 mr-2" />
-            {t.dashboard.exportCsv}
-          </button>
-        )}
+        <div className="flex gap-2">
+
+          {user.role !== Role.LOJA && (
+            <button className="flex items-center px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors text-sm font-bold uppercase tracking-widest">
+              <Download className="w-4 h-4 mr-2" />
+              {t.dashboard.exportCsv}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Store Info Card (Only for Stores) */}
@@ -179,7 +182,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user }) => {
                     to={`/admin/claims/${claim.id}`}
                     className="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-xs font-bold rounded-none text-gray-700 bg-white hover:bg-gray-50 uppercase tracking-widest"
                   >
-                    {t.dashboard.details}
+                    {t.common.details}
                   </Link>
                 </td>
               </tr>

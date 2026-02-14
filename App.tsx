@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import PublicWarrantyForm from './pages/PublicWarrantyForm';
 import TrackClaim from './pages/TrackClaim';
 import ClaimDetail from './pages/ClaimDetail';
+import DebugPage from './pages/DebugPage';
 import Home from './pages/Home';
 import Stores from './pages/Stores';
 import StoreDetail from './pages/StoreDetail';
@@ -54,6 +55,7 @@ export default function App() {
                   <Route path="settings" element={<Settings user={user!} />} />
                   <Route path="reports" element={<Reports user={user!} />} />
                   <Route path="claims/:id" element={<ClaimDetail user={user!} />} />
+                  <Route path="debug/:id" element={<DebugPage />} />
                   <Route path="reports" element={<Reports user={user!} />} />
                   <Route path="*" element={<Navigate to="dashboard" />} />
                 </Routes>

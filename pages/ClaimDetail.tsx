@@ -40,7 +40,7 @@ const ClaimDetail: React.FC<ClaimDetailProps> = ({ user }) => {
         return (
             <div className="flex flex-col items-center justify-center py-20 bg-white border border-red-100 shadow-sm p-8 text-center">
                 <AlertTriangle className="w-12 h-12 text-red-500 mb-4" />
-                <h2 className="text-xl font-black uppercase tracking-widest mb-2">{t.claim.notFoundAccess}</h2>
+                <h2 className="text-xl font-black uppercase tracking-widest mb-2">{t.track.notFound}</h2>
                 <p className="text-gray-500 mb-6 max-w-md">{error || "The claim could not be found or you don't have permission to view it."}</p>
                 <button
                     onClick={() => refresh()}

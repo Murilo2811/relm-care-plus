@@ -34,7 +34,7 @@ export const ClaimInfoCard: React.FC<ClaimInfoCardProps> = ({ claim, user }) => 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             {/* Product Info - Takes 2 columns on large screens */}
-            <InfoSection title={t.claim.productPurchase} icon={<Shield className="w-4 h-4" />} className="lg:col-span-2">
+            <InfoSection title={t.claimDetail.productPurchase} icon={<Shield className="w-4 h-4" />} className="lg:col-span-2">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <InfoItem label={t.track.product} value={claim.productDescription} />
                     <InfoItem label={t.track.serialNumber} value={claim.serialNumber} highlight />
@@ -49,7 +49,7 @@ export const ClaimInfoCard: React.FC<ClaimInfoCardProps> = ({ claim, user }) => 
                             </p>
                             <div className={`text-xs mt-2 inline-flex items-center px-2 py-1 ${claim.linkStatus === 'PENDING_REVIEW' ? 'bg-yellow-50 text-yellow-800' : 'bg-green-50 text-green-800'}`}>
                                 {claim.linkStatus === 'PENDING_REVIEW' ? <AlertCircle className="w-3 h-3 mr-1" /> : null}
-                                {claim.linkStatus === 'PENDING_REVIEW' ? t.claim.linkPending : t.claim.linked}
+                                {claim.linkStatus === 'PENDING_REVIEW' ? t.claimDetail.pendingReview : t.claimDetail.linked}
                             </div>
                         </div>
                     </div>
@@ -57,15 +57,15 @@ export const ClaimInfoCard: React.FC<ClaimInfoCardProps> = ({ claim, user }) => 
             </InfoSection>
 
             {/* Customer Info */}
-            <InfoSection title={t.claim.customer} icon={<UserIcon className="w-4 h-4" />}>
-                <InfoItem label={t.claim.name} value={claim.customerName} />
+            <InfoSection title={t.claimDetail.customer} icon={<UserIcon className="w-4 h-4" />}>
+                <InfoItem label={t.claimDetail.name} value={claim.customerName} />
                 <InfoItem
-                    label={t.claim.email}
-                    value={user.role === Role.LOJA && !claim.storeId ? t.claim.masked : claim.customerEmail}
+                    label={t.users.email}
+                    value={user.role === Role.LOJA && !claim.storeId ? t.claimDetail.masked : claim.customerEmail}
                 />
                 <InfoItem
-                    label={t.claim.phone}
-                    value={user.role === Role.LOJA && !claim.storeId ? t.claim.masked : claim.customerPhone}
+                    label={t.claimDetail.phone}
+                    value={user.role === Role.LOJA && !claim.storeId ? t.claimDetail.masked : claim.customerPhone}
                 />
             </InfoSection>
         </div>

@@ -39,13 +39,13 @@ export const ClaimActionPanel: React.FC<ClaimActionPanelProps> = ({ claim, user,
 
             <h3 className="font-black uppercase tracking-widest text-sm mb-6 flex items-center relative z-10">
                 <span className="w-2 h-2 bg-red-500 mr-3"></span>
-                {t.claim.updateStatus}
+                {t.claimDetail.updateStatus}
             </h3>
 
             <div className="space-y-4 relative z-10">
                 <div>
                     <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2 block">
-                        {t.claim.selectStatus}
+                        {t.claimDetail.selectNewStatus}
                     </label>
                     <select
                         className="w-full bg-zinc-900 border-none text-white py-3 px-4 focus:ring-1 focus:ring-white outline-none appearance-none cursor-pointer hover:bg-zinc-800 transition-colors"
@@ -68,7 +68,7 @@ export const ClaimActionPanel: React.FC<ClaimActionPanelProps> = ({ claim, user,
 
                 <div>
                     <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2 block">
-                        {t.claim.mandatoryNote}
+                        {t.claimDetail.mandatoryNote}
                     </label>
                     <textarea
                         className="w-full bg-zinc-900 border-none text-white p-4 focus:ring-1 focus:ring-white outline-none resize-none h-32 hover:bg-zinc-800 transition-colors"
@@ -88,7 +88,7 @@ export const ClaimActionPanel: React.FC<ClaimActionPanelProps> = ({ claim, user,
                         <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
                         <>
-                            {t.claim.confirmUpdate} <ArrowRight className="w-4 h-4" />
+                            {t.claimDetail.confirmUpdate} <ArrowRight className="w-4 h-4" />
                         </>
                     )}
                 </button>

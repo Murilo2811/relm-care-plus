@@ -1,7 +1,8 @@
 import React from 'react';
-import { ClaimStatus, WarrantyClaim } from '../../types';
+import { WarrantyClaim } from '../../types';
 import { STATUS_COLORS } from '../../constants';
 import { useStatusLabels } from '../../hooks/useStatusLabels';
+import { useT } from '../../i18n/LanguageContext';
 
 interface ClaimHeaderProps {
     claim: WarrantyClaim;
@@ -9,6 +10,7 @@ interface ClaimHeaderProps {
 
 export const ClaimHeader: React.FC<ClaimHeaderProps> = ({ claim }) => {
     const statusLabels = useStatusLabels();
+    const { t } = useT();
 
     return (
         <div className="bg-white border-l-4 border-black p-8 shadow-sm mb-8 relative overflow-hidden">
@@ -23,7 +25,7 @@ export const ClaimHeader: React.FC<ClaimHeaderProps> = ({ claim }) => {
                             {claim.protocolNumber}
                         </h1>
                         <p className="text-gray-500 font-mono text-sm uppercase tracking-widest">
-                            Created: {new Date(claim.createdAt).toLocaleDateString()} • {new Date(claim.createdAt).toLocaleTimeString()}
+                            {t.claimDetail.createdAt}: {new Date(claim.createdAt).toLocaleDateString()} • {new Date(claim.createdAt).toLocaleTimeString()}
                         </p>
                     </div>
 
@@ -32,7 +34,7 @@ export const ClaimHeader: React.FC<ClaimHeaderProps> = ({ claim }) => {
                             {statusLabels[claim.status]}
                         </span>
                         <span className="text-xs text-gray-400 mt-2 font-mono uppercase">
-                            Last Update: {new Date(claim.updatedAt).toLocaleDateString()}
+                            {t.track.lastUpdate}: {new Date(claim.updatedAt).toLocaleDateString()}
                         </span>
                     </div>
                 </div>

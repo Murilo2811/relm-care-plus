@@ -241,24 +241,21 @@ const MockApi = {
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-let supabase: SupabaseClient;
+// --- SUPABASE CLIENT (Lazy Initialization) ---
+let supabaseInstance: SupabaseClient | null = null;
 
-// DEBUG: Log Environment Variables (Masked Key)
-console.log('Supabase Config:', {
-  url: supabaseUrl ? supabaseUrl : 'MISSING',
-  key: supabaseKey ? (supabaseKey.substring(0, 10) + '...') : 'MISSING',
-  useMock: USE_MOCK
-});
+const getSupabase = (): SupabaseClient => {
+  if (USE_MOCK) throw new Error('Cannot get Supabase client in Mock mode');
 
-if (!USE_MOCK) {
+  if (supabaseInstance) return supabaseInstance;
+
   if (!supabaseUrl || !supabaseKey) {
     console.error('CRITICAL: VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY is missing!');
-    // Fallback to avoid crash, but API calls will fail gracefully
     throw new Error('Supabase configuration missing.');
   }
 
   try {
-    supabase = createClient(supabaseUrl, supabaseKey, {
+    supabaseInstance = createClient(supabaseUrl, supabaseKey, {
       realtime: { params: { eventsPerSecond: 0 } },
       auth: {
         persistSession: true,
@@ -266,16 +263,18 @@ if (!USE_MOCK) {
         detectSessionInUrl: false
       }
     });
-    console.log('Supabase Client Initialized Successfully');
+    console.log('Supabase Client Initialized Successfully (Lazy)');
+    return supabaseInstance;
   } catch (error) {
     console.error('Failed to initialize Supabase client:', error);
+    throw error;
   }
-}
+};
 
 const RemoteApi = {
   auth: {
     login: async (email: string, pass: string) => {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await getSupabase().auth.signInWithPassword({
         email,
         password: pass,
       });
@@ -284,7 +283,7 @@ const RemoteApi = {
       if (!data.user) throw new Error('Erro desconhecido ao logar.');
 
       // Fetch additional user profile data from public schema
-      const { data: userProfile, error: profileError } = await supabase
+      const { data: userProfile, error: profileError } = await getSupabase()
         .from('profiles')
         .select('*')
         .eq('id', data.user.id)
@@ -315,7 +314,7 @@ const RemoteApi = {
       return user;
     },
     logout: async () => {
-      await supabase.auth.signOut();
+      await getSupabase().auth.signOut();
       localStorage.removeItem(USER_KEY);
       localStorage.removeItem(STORAGE_KEY);
     },
@@ -338,7 +337,7 @@ const RemoteApi = {
       };
 
       // Use RPC (Remote Procedure Call) to bypass RLS securely
-      const { data: result, error } = await supabase
+      const { data: result, error } = await getSupabase()
         .rpc('create_public_claim', { claim_data: payload });
 
       if (error) throw error;
@@ -370,7 +369,7 @@ const RemoteApi = {
       const currentUser = getStoredUser();
       if (!currentUser) throw new Error('Unauthorized');
 
-      let query = supabase.from('warranty_claims').select('*');
+      let query = getSupabase().from('warranty_claims').select('*');
 
       if (currentUser.role === Role.LOJA) {
         query = query.eq('store_id', currentUser.storeId);
@@ -411,7 +410,7 @@ const RemoteApi = {
     getById: async (id: string) => {
       const currentUser = getStoredUser();
 
-      const { data: c, error } = await supabase
+      const { data: c, error } = await getSupabase()
         .from('warranty_claims')
         .select('*')
         .eq('id', id)
@@ -442,7 +441,7 @@ const RemoteApi = {
       } as WarrantyClaim;
     },
     getByProtocol: async (protocol: string) => {
-      const { data: c, error } = await supabase
+      const { data: c, error } = await getSupabase()
         .from('warranty_claims')
         .select('*')
         .eq('protocol_number', protocol)
@@ -474,10 +473,10 @@ const RemoteApi = {
     updateStatus: async (id: string, newStatus: ClaimStatus, comment: string) => {
       const currentUser = getStoredUser();
 
-      const { data: currentClaim } = await supabase.from('warranty_claims').select('status').eq('id', id).single();
+      const { data: currentClaim } = await getSupabase().from('warranty_claims').select('status').eq('id', id).single();
       const oldStatus = currentClaim?.status;
 
-      const { data: updated, error } = await supabase
+      const { data: updated, error } = await getSupabase()
         .from('warranty_claims')
         .update({
           status: newStatus,
@@ -489,7 +488,7 @@ const RemoteApi = {
 
       if (error) throw error;
 
-      await supabase.from('warranty_events').insert([{
+      await getSupabase().from('warranty_events').insert([{
         claim_id: id,
         event_type: 'STATUS_CHANGE',
         from_status: oldStatus,
@@ -506,7 +505,7 @@ const RemoteApi = {
       } as any;
     },
     getHistory: async (id: string) => {
-      const { data, error } = await supabase
+      const { data, error } = await getSupabase()
         .from('warranty_events')
         .select('*')
         .eq('claim_id', id)
@@ -528,7 +527,7 @@ const RemoteApi = {
   },
   stores: {
     list: async () => {
-      const { data, error } = await supabase.from('stores').select('*');
+      const { data, error } = await getSupabase().from('stores').select('*');
       if (error) throw error;
 
       return data.map((s: any) => ({
@@ -545,7 +544,7 @@ const RemoteApi = {
       } as Store));
     },
     getById: async (id: string) => {
-      const { data: s, error } = await supabase.from('stores').select('*').eq('id', id).single();
+      const { data: s, error } = await getSupabase().from('stores').select('*').eq('id', id).single();
       if (error) return null;
 
       return {
@@ -571,7 +570,7 @@ const RemoteApi = {
         throw new Error('Store not found');
       }
 
-      const { data: updated, error } = await supabase
+      const { data: updated, error } = await getSupabase()
         .from('stores')
         .update({
           trade_name: data.tradeName,
@@ -592,7 +591,7 @@ const RemoteApi = {
   },
   users: {
     list: async () => {
-      const { data, error } = await supabase.from('users').select('*');
+      const { data, error } = await getSupabase().from('users').select('*');
       if (error) throw error;
       return data.map((u: any) => ({
         id: u.id,
@@ -610,7 +609,7 @@ const RemoteApi = {
         return newUser;
       }
 
-      const { data, error } = await supabase.functions.invoke('admin-user-actions', {
+      const { data, error } = await getSupabase().functions.invoke('admin-user-actions', {
         body: {
           action: 'create',
           userData: {
@@ -637,7 +636,7 @@ const RemoteApi = {
         throw new Error('User not found');
       }
 
-      const { data, error } = await supabase.functions.invoke('admin-user-actions', {
+      const { data, error } = await getSupabase().functions.invoke('admin-user-actions', {
         body: {
           action: 'update',
           userId: id,
@@ -655,9 +654,9 @@ const RemoteApi = {
       return data;
     },
     toggleStatus: async (id: string) => {
-      const { data: current } = await supabase.from('users').select('active').eq('id', id).single();
+      const { data: current } = await getSupabase().from('users').select('active').eq('id', id).single();
 
-      const { data, error } = await supabase
+      const { data, error } = await getSupabase()
         .from('users')
         .update({ active: !current?.active })
         .eq('id', id)

@@ -33,8 +33,8 @@ export const ClaimTimeline: React.FC<ClaimTimelineProps> = ({ history }) => {
 
                             <div className="font-medium text-sm text-gray-900">
                                 {event.eventType === 'STATUS_CHANGE'
-                                    ? <span className="flex items-center gap-2"><CheckCircle className="w-3 h-3" /> {t.claim.changedTo} <strong>{statusLabels[event.toStatus!] || event.toStatus}</strong></span>
-                                    : <span className="flex items-center gap-2"><MessageSquare className="w-3 h-3" /> {t.claim.comment}</span>
+                                    ? <span className="flex items-center gap-2"><CheckCircle className="w-3 h-3" /> {t.claimDetail.changedTo} <strong>{statusLabels[event.toStatus!] || event.toStatus}</strong></span>
+                                    : <span className="flex items-center gap-2"><MessageSquare className="w-3 h-3" /> {t.claimDetail.comment}</span>
                                 }
                             </div>
 
