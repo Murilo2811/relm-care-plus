@@ -130,7 +130,7 @@ const MockApi = {
         protocolNumber: `HB-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`,
         status: ClaimStatus.RECEBIDO,
         linkStatus: LinkStatus.PENDING_REVIEW,
-        storeId: undefined,
+        storeId: data.storeId,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         ...data
@@ -333,7 +333,8 @@ const RemoteApi = {
         serial_number: data.serialNumber,
         invoice_number: data.invoiceNumber,
         purchase_date: data.purchaseDate,
-        purchase_store_name: data.purchaseStoreName
+        purchase_store_name: data.purchaseStoreName,
+        store_id: data.storeId
       };
 
       // Use RPC (Remote Procedure Call) to bypass RLS securely

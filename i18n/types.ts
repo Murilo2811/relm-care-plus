@@ -200,6 +200,10 @@ export interface Translations {
         administrator: string;
         creating: string;
         createUser: string;
+        create: string;
+        roleAdmin: string;
+        roleManager: string;
+        roleStore: string;
     };
     settings: {
         settings: string;

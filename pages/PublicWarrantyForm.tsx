@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { api } from '../services/api';
-import { CheckCircle, ArrowRight, ArrowLeft, Info } from 'lucide-react';
+import { CheckCircle, ArrowRight, ArrowLeft, Info, ChevronDown } from 'lucide-react';
 import { useT } from '../i18n/LanguageContext';
 import { LanguageSelector } from '../components/LanguageSelector';
+import { Store } from '../types';
 
 const PublicWarrantyForm = () => {
   const [step, setStep] = useState(1);
+  const [stores, setStores] = useState<Store[]>([]);
   const [formData, setFormData] = useState({
     customerName: '',
     customerPhone: '',
@@ -16,11 +18,26 @@ const PublicWarrantyForm = () => {
     purchaseStoreName: '',
     purchaseStoreCity: '',
     purchaseDate: '',
+    storeId: '',
     acceptedPolicy: false
   });
   const [protocol, setProtocol] = useState('');
   const [loading, setLoading] = useState(false);
   const { t } = useT();
+
+  useEffect(() => {
+    loadStores();
+  }, []);
+
+  const loadStores = async () => {
+    try {
+      const data = await api.stores.list();
+      // Filter only active stores if needed, but for now list all or active
+      setStores(data.filter(s => s.active));
+    } catch (e) {
+      console.error('Failed to load stores', e);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,9 +56,31 @@ const PublicWarrantyForm = () => {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleStoreChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedId = e.target.value;
+    const selectedStore = stores.find(s => s.id === selectedId);
+
+    if (selectedStore) {
+      setFormData(prev => ({
+        ...prev,
+        storeId: selectedStore.id,
+        purchaseStoreName: selectedStore.tradeName,
+        purchaseStoreCity: selectedStore.city
+      }));
+    } else {
+      // Logic for "Other" or manual entry if needed, currently resets
+      setFormData(prev => ({
+        ...prev,
+        storeId: '',
+        purchaseStoreName: '',
+        purchaseStoreCity: ''
+      }));
+    }
   };
 
   if (step === 3) {
@@ -254,24 +293,34 @@ const PublicWarrantyForm = () => {
                       </h2>
 
                       <div className="space-y-8">
-                        <div className="group">
+                        <div className="group relative">
                           <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 group-focus-within:text-black transition-colors">{t.form.authorizedStore}</label>
-                          <input
-                            name="purchaseStoreName"
-                            required
-                            className="w-full bg-white border-b border-gray-200 focus:border-black outline-none py-3 text-lg font-light transition-all rounded-none"
-                            value={formData.purchaseStoreName}
-                            onChange={handleChange}
-                          />
+                          <div className="relative">
+                            <select
+                              name="storeId"
+                              required
+                              className="w-full bg-white border-b border-gray-200 focus:border-black outline-none py-3 text-lg font-light transition-all rounded-none appearance-none cursor-pointer"
+                              value={formData.storeId}
+                              onChange={handleStoreChange}
+                            >
+                              <option value="">Selecione uma loja...</option>
+                              {stores.map(store => (
+                                <option key={store.id} value={store.id}>
+                                  {store.tradeName} - {store.city}/{store.state}
+                                </option>
+                              ))}
+                            </select>
+                            <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                          </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                           <div className="group">
                             <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 group-focus-within:text-black transition-colors">{t.form.city}</label>
                             <input
                               name="purchaseStoreCity"
-                              className="w-full bg-white border-b border-gray-200 focus:border-black outline-none py-3 text-lg font-light transition-all rounded-none"
+                              className="w-full bg-gray-50 border-b border-gray-200 focus:border-black outline-none py-3 text-lg font-light transition-all rounded-none text-gray-500"
                               value={formData.purchaseStoreCity}
-                              onChange={handleChange}
+                              readOnly
                             />
                           </div>
                           <div className="group">

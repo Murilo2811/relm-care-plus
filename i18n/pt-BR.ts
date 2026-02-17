@@ -200,6 +200,10 @@ export const ptBR: Translations = {
         administrator: 'Administrador',
         creating: 'Criando...',
         createUser: 'Criar Usuário',
+        create: 'Criar',
+        roleAdmin: 'Administrador',
+        roleManager: 'Gerente',
+        roleStore: 'Loja',
     },
     settings: {
         settings: 'Configurações',

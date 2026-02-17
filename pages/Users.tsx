@@ -140,46 +140,89 @@ const Users: React.FC<UsersProps> = ({ user }) => {
         </table>
       </div>
 
-      {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white w-full max-w-lg shadow-2xl">
-            <div className="flex justify-between items-center p-6 border-b border-gray-100">
-              <h2 className="text-lg font-black text-black uppercase italic">{t.users.newUser}</h2>
-              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-black"><X className="w-5 h-5" /></button>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-300">
+          <div className="bg-white w-full max-w-lg shadow-2xl animate-in fade-in zoom-in duration-300 border border-zinc-200">
+            <div className="flex justify-between items-center p-8 border-b border-gray-100">
+              <h2 className="text-2xl font-black text-black uppercase italic tracking-tighter">{t.users.newUser}</h2>
+              <button
+                onClick={() => setShowModal(false)}
+                className="text-gray-400 hover:text-black transition-colors p-2 hover:bg-gray-100 rounded-full"
+              >
+                <X className="w-6 h-6" />
+              </button>
             </div>
-            <div className="p-6 space-y-6">
-              <div>
-                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">{t.form.fullName}</label>
-                <input className="w-full border-b border-gray-200 focus:border-black outline-none py-2 rounded-none" value={formName} onChange={(e) => setFormName(e.target.value)} />
+            <div className="p-8 space-y-8">
+              <div className="space-y-6">
+                <div className="group">
+                  <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 group-focus-within:text-black transition-colors">{t.form.fullName}</label>
+                  <input
+                    className="w-full border-b-2 border-gray-100 focus:border-black outline-none py-3 text-lg font-medium transition-all bg-transparent placeholder-gray-200"
+                    value={formName}
+                    onChange={(e) => setFormName(e.target.value)}
+                    placeholder={t.users.name}
+                  />
+                </div>
+                <div className="group">
+                  <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 group-focus-within:text-black transition-colors">{t.form.email}</label>
+                  <input
+                    className="w-full border-b-2 border-gray-100 focus:border-black outline-none py-3 text-lg font-medium transition-all bg-transparent placeholder-gray-200"
+                    type="email"
+                    value={formEmail}
+                    onChange={(e) => setFormEmail(e.target.value)}
+                    placeholder={t.login.emailPlaceholder}
+                  />
+                </div>
+                <div className="group">
+                  <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 group-focus-within:text-black transition-colors">{t.login.password}</label>
+                  <input
+                    className="w-full border-b-2 border-gray-100 focus:border-black outline-none py-3 text-lg font-medium transition-all bg-transparent placeholder-gray-200"
+                    type="password"
+                    value={formPassword}
+                    onChange={(e) => setFormPassword(e.target.value)}
+                    placeholder="••••••••"
+                  />
+                </div>
               </div>
-              <div>
-                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">{t.form.email}</label>
-                <input className="w-full border-b border-gray-200 focus:border-black outline-none py-2 rounded-none" type="email" value={formEmail} onChange={(e) => setFormEmail(e.target.value)} />
-              </div>
-              <div>
-                <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2">{t.login.password}</label>
-                <input className="w-full border-b border-gray-200 focus:border-black outline-none py-2 rounded-none" type="password" value={formPassword} onChange={(e) => setFormPassword(e.target.value)} />
-              </div>
+
               <div>
                 <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-4">{t.users.accessProfile}</label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {[
-                    { value: Role.ADMIN_RELM, label: t.users.roleAdmin },
-                    { value: Role.GERENTE_RELM, label: t.users.roleManager },
-                    { value: Role.LOJA, label: t.users.roleStore },
+                    { value: Role.ADMIN_RELM, label: t.users.roleAdmin, desc: 'Acesso Total' },
+                    { value: Role.GERENTE_RELM, label: t.users.roleManager, desc: 'Gestão' },
+                    { value: Role.LOJA, label: t.users.roleStore, desc: 'Operacional' },
                   ].map(opt => (
-                    <label key={opt.value} className={`flex items-center p-3 border-2 cursor-pointer transition-all ${formRole === opt.value ? 'border-black bg-gray-50' : 'border-gray-200 hover:border-gray-300'}`}>
-                      <input type="radio" name="role" className="text-black focus:ring-black" checked={formRole === opt.value} onChange={() => setFormRole(opt.value)} />
-                      <span className="ml-2 text-sm font-medium">{opt.label}</span>
-                    </label>
+                    <button
+                      key={opt.value}
+                      onClick={() => setFormRole(opt.value)}
+                      className={`relative flex flex-col items-center justify-center p-4 border-2 transition-all duration-200 group ${formRole === opt.value
+                          ? 'border-black bg-black text-white shadow-lg scale-[1.02]'
+                          : 'border-gray-100 hover:border-black/30 text-gray-600 hover:bg-gray-50'
+                        }`}
+                    >
+                      <div className={`w-3 h-3 rounded-full mb-3 border-2 ${formRole === opt.value ? 'bg-white border-white' : 'border-gray-300 group-hover:border-black'
+                        }`} />
+                      <span className="text-xs font-black uppercase tracking-wider mb-1">{opt.label}</span>
+                      <span className={`text-[10px] uppercase tracking-widest ${formRole === opt.value ? 'text-gray-400' : 'text-gray-300'
+                        }`}>{opt.desc}</span>
+                    </button>
                   ))}
                 </div>
               </div>
             </div>
-            <div className="p-6 border-t border-gray-100 flex gap-3">
-              <button onClick={() => setShowModal(false)} className="flex-1 py-3 px-4 border border-gray-200 text-gray-700 hover:bg-gray-50 font-bold uppercase tracking-widest text-sm transition-colors">{t.common.back}</button>
-              <button onClick={handleCreate} disabled={submitting} className="flex-1 py-3 px-4 bg-black text-white hover:bg-zinc-800 font-bold uppercase tracking-widest text-sm transition-colors disabled:opacity-50">
+            <div className="p-8 border-t border-gray-100 flex gap-4 bg-gray-50/50">
+              <button
+                onClick={() => setShowModal(false)}
+                className="flex-1 py-4 px-6 border-2 border-gray-200 text-black hover:bg-white hover:border-black font-black uppercase tracking-[0.2em] text-xs transition-all duration-300"
+              >
+                {t.common.back}
+              </button>
+              <button
+                onClick={handleCreate}
+                disabled={submitting}
+                className="flex-[2] py-4 px-6 bg-black text-white border-2 border-black hover:bg-zinc-800 hover:border-zinc-800 font-black uppercase tracking-[0.2em] text-xs transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-black/20"
+              >
                 {submitting ? t.form.processing : t.users.create}
               </button>
             </div>
