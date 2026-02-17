@@ -17,6 +17,8 @@ const PublicWarrantyForm = () => {
     invoiceNumber: '',
     purchaseStoreName: '',
     purchaseStoreCity: '',
+    purchaseStoreState: '',
+    purchaseStoreCnpj: '',
     purchaseDate: '',
     storeId: '',
     acceptedPolicy: false
@@ -70,7 +72,9 @@ const PublicWarrantyForm = () => {
         ...prev,
         storeId: selectedStore.id,
         purchaseStoreName: selectedStore.tradeName,
-        purchaseStoreCity: selectedStore.city
+        purchaseStoreCity: selectedStore.city,
+        purchaseStoreState: selectedStore.state,
+        purchaseStoreCnpj: selectedStore.cnpj
       }));
     } else {
       // Logic for "Other" or manual entry if needed, currently resets
@@ -78,7 +82,9 @@ const PublicWarrantyForm = () => {
         ...prev,
         storeId: '',
         purchaseStoreName: '',
-        purchaseStoreCity: ''
+        purchaseStoreCity: '',
+        purchaseStoreState: '',
+        purchaseStoreCnpj: ''
       }));
     }
   };
@@ -313,7 +319,8 @@ const PublicWarrantyForm = () => {
                             <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
                           </div>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                           <div className="group">
                             <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 group-focus-within:text-black transition-colors">{t.form.city}</label>
                             <input
@@ -324,16 +331,35 @@ const PublicWarrantyForm = () => {
                             />
                           </div>
                           <div className="group">
-                            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 group-focus-within:text-black transition-colors">{t.form.purchaseDate}</label>
+                            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 group-focus-within:text-black transition-colors">UF</label>
                             <input
-                              type="date"
-                              name="purchaseDate"
-                              required
-                              className="w-full bg-white border-b border-gray-200 focus:border-black outline-none py-3 text-sm font-light transition-all rounded-none h-[46px]"
-                              value={formData.purchaseDate}
-                              onChange={handleChange}
+                              name="purchaseStoreState"
+                              className="w-full bg-gray-50 border-b border-gray-200 focus:border-black outline-none py-3 text-lg font-light transition-all rounded-none text-gray-500"
+                              value={formData.purchaseStoreState}
+                              readOnly
                             />
                           </div>
+                          <div className="group">
+                            <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 group-focus-within:text-black transition-colors">CNPJ</label>
+                            <input
+                              name="purchaseStoreCnpj"
+                              className="w-full bg-gray-50 border-b border-gray-200 focus:border-black outline-none py-3 text-lg font-light transition-all rounded-none text-gray-500"
+                              value={formData.purchaseStoreCnpj}
+                              readOnly
+                            />
+                          </div>
+                        </div>
+
+                        <div className="group">
+                          <label className="block text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 group-focus-within:text-black transition-colors">{t.form.purchaseDate}</label>
+                          <input
+                            type="date"
+                            name="purchaseDate"
+                            required
+                            className="w-full bg-white border-b border-gray-200 focus:border-black outline-none py-3 text-sm font-light transition-all rounded-none h-[46px]"
+                            value={formData.purchaseDate}
+                            onChange={handleChange}
+                          />
                         </div>
                       </div>
                     </div>

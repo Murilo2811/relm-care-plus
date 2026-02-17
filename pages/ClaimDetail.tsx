@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { User, Role } from '../types';
+import { User, Role, Store, LinkStatus } from '../types';
 import { useT } from '../i18n/LanguageContext';
 import { useClaimDetail } from '../hooks/useClaimDetail';
 import { ClaimHeader } from '../components/claims/ClaimHeader';
 import { ClaimInfoCard } from '../components/claims/ClaimInfoCard';
 import { ClaimTimeline } from '../components/claims/ClaimTimeline';
 import { ClaimActionPanel } from '../components/claims/ClaimActionPanel';
+import { StoreSelectorModal } from '../components/claims/StoreSelectorModal';
 import { ArrowLeft, RefreshCw, AlertTriangle } from 'lucide-react';
+import { api } from '../services/api';
 
 interface ClaimDetailProps {
     user: User;
@@ -17,6 +19,25 @@ const ClaimDetail: React.FC<ClaimDetailProps> = ({ user }) => {
     const { id } = useParams<{ id: string }>();
     const { claim, history, loading, error, refresh, updateStatus } = useClaimDetail(id);
     const { t } = useT();
+    const [isStoreModalOpen, setIsStoreModalOpen] = useState(false);
+
+    const handleSelectStore = async (store: Store) => {
+        if (!claim) return;
+        try {
+            await api.claims.update(claim.id, {
+                storeId: store.id,
+                purchaseStoreName: store.tradeName,
+                purchaseStoreCity: store.city,
+                purchaseStoreState: store.state,
+                linkStatus: LinkStatus.LINKED_MANUALLY
+            });
+            setIsStoreModalOpen(false);
+            refresh();
+        } catch (error) {
+            console.error('Failed to update store', error);
+            alert('Failed to link store. Please try again.');
+        }
+    };
 
     if (loading) {
         return (
@@ -64,7 +85,11 @@ const ClaimDetail: React.FC<ClaimDetailProps> = ({ user }) => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Column: Info & Details */}
                 <div className="lg:col-span-2 space-y-8">
-                    <ClaimInfoCard claim={claim} user={user} />
+                    <ClaimInfoCard
+                        claim={claim}
+                        user={user}
+                        onLinkStore={() => setIsStoreModalOpen(true)}
+                    />
 
                     {/* Mobile Action Panel (visible only on small screens if needed, strictly simpler layout here) */}
                     <div className="block lg:hidden">
@@ -87,6 +112,13 @@ const ClaimDetail: React.FC<ClaimDetailProps> = ({ user }) => {
                     </div>
                 </div>
             </div>
+
+            <StoreSelectorModal
+                isOpen={isStoreModalOpen}
+                onClose={() => setIsStoreModalOpen(false)}
+                onSelect={handleSelectStore}
+                currentStoreId={claim.storeId}
+            />
         </div>
     );
 };

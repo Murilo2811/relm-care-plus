@@ -131,6 +131,7 @@ const MockApi = {
         status: ClaimStatus.RECEBIDO,
         linkStatus: LinkStatus.PENDING_REVIEW,
         storeId: data.storeId,
+        purchaseStoreState: data.purchaseStoreState,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         ...data
@@ -188,6 +189,14 @@ const MockApi = {
     },
     getHistory: async (id: string) => {
       return mockEvents.filter(e => e.claimId === id);
+    },
+    update: async (id: string, data: Partial<WarrantyClaim>) => {
+      const index = mockClaims.findIndex(c => c.id === id);
+      if (index >= 0) {
+        mockClaims[index] = { ...mockClaims[index], ...data, updatedAt: new Date().toISOString() };
+        return mockClaims[index];
+      }
+      throw new Error('Claim not found');
     }
   },
   stores: {
@@ -334,6 +343,7 @@ const RemoteApi = {
         invoice_number: data.invoiceNumber,
         purchase_date: data.purchaseDate,
         purchase_store_name: data.purchaseStoreName,
+        purchase_store_state: data.purchaseStoreState,
         store_id: data.storeId
       };
 
@@ -524,6 +534,33 @@ const RemoteApi = {
         createdAt: e.created_at,
         createdByUserName: e.created_by_user_name
       } as WarrantyEvent));
+    },
+    update: async (id: string, data: Partial<WarrantyClaim>) => {
+      const updateData: any = {
+        updated_at: new Date().toISOString()
+      };
+
+      if (data.storeId !== undefined) updateData.store_id = data.storeId;
+      if (data.purchaseStoreName !== undefined) updateData.purchase_store_name = data.purchaseStoreName;
+      if (data.purchaseStoreCity !== undefined) updateData.purchase_city = data.purchaseStoreCity;
+      if (data.purchaseStoreState !== undefined) updateData.purchase_state = data.purchaseStoreState;
+      if (data.linkStatus !== undefined) updateData.link_status = data.linkStatus;
+
+      const { data: updated, error } = await getSupabase()
+        .from('warranty_claims')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      return {
+        id: updated.id,
+        // ... (map other fields if strictly needed, but usually just confirming update is enough)
+        storeId: updated.store_id,
+        updatedAt: updated.updated_at
+      } as WarrantyClaim;
     }
   },
   stores: {
