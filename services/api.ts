@@ -577,7 +577,7 @@ const RemoteApi = {
         state: s.state,
         contactName: s.contact_name,
         contactEmail: s.contact_email,
-        active: s.active,
+        active: s.is_active,
         claimsCount: s.claims_count
       } as Store));
     },
@@ -594,7 +594,7 @@ const RemoteApi = {
         state: s.state,
         contactName: s.contact_name,
         contactEmail: s.contact_email,
-        active: s.active,
+        active: s.is_active,
         claimsCount: s.claims_count
       } as Store;
     },
