@@ -121,7 +121,12 @@ const MockApi = {
       localStorage.removeItem(USER_KEY);
       localStorage.removeItem(STORAGE_KEY);
     },
-    getCurrentUser: () => getStoredUser()
+    getCurrentUser: () => getStoredUser(),
+    changePassword: async (_currentPassword: string, newPassword: string) => {
+      if (newPassword.length < 6) throw new Error('A nova senha deve ter pelo menos 6 caracteres.');
+      // Mock: simula sucesso sem validar a senha atual
+      return true;
+    }
   },
   claims: {
     createPublic: async (data: any) => {
@@ -327,7 +332,12 @@ const RemoteApi = {
       localStorage.removeItem(USER_KEY);
       localStorage.removeItem(STORAGE_KEY);
     },
-    getCurrentUser: () => getStoredUser()
+    getCurrentUser: () => getStoredUser(),
+    changePassword: async (_currentPassword: string, newPassword: string) => {
+      const { error } = await getSupabase().auth.updateUser({ password: newPassword });
+      if (error) throw new Error(error.message);
+      return true;
+    }
   },
   claims: {
     createPublic: async (data: any) => {

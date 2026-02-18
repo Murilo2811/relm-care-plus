@@ -235,6 +235,15 @@ export interface Translations {
         webhookEvents: string;
         webhookDesc: string;
         configureWebhooks: string;
+        changePassword: string;
+        currentPassword: string;
+        newPassword: string;
+        confirmPassword: string;
+        passwordMismatch: string;
+        passwordChanged: string;
+        passwordError: string;
+        passwordMinLength: string;
+        changingPassword: string;
     };
     reports: {
         reports: string;
