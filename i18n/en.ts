@@ -200,6 +200,10 @@ export const en: Translations = {
         administrator: 'Administrator',
         creating: 'Creating...',
         createUser: 'Create User',
+        create: 'Create',
+        roleAdmin: 'Administrator',
+        roleManager: 'Manager',
+        roleStore: 'Store',
     },
     settings: {
         settings: 'Settings',
