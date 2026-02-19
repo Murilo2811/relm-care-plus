@@ -13,6 +13,7 @@ const Users: React.FC<UsersProps> = ({ user }) => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [editingUserId, setEditingUserId] = useState<string | null>(null); // Track if editing
   const [formName, setFormName] = useState('');
   const [formEmail, setFormEmail] = useState('');
   const [formRole, setFormRole] = useState<Role>(Role.LOJA);
@@ -35,12 +36,25 @@ const Users: React.FC<UsersProps> = ({ user }) => {
     setLoading(false);
   };
 
-  const handleCreate = async () => {
+  const handleSave = async () => {
     if (!formName || !formEmail || !formPassword) return;
     setSubmitting(true);
     try {
-      await api.users.create({ name: formName, email: formEmail, role: formRole, active: true } as any);
+      if (editingUserId) {
+        // Update existing user
+        await api.users.update(editingUserId, {
+          name: formName,
+          email: formEmail,
+          role: formRole,
+          active: true,
+          password: formPassword || undefined // Only send if not empty
+        } as any);
+      } else {
+        // Create new user
+        await api.users.create({ name: formName, email: formEmail, role: formRole, active: true } as any);
+      }
       setShowModal(false);
+      setEditingUserId(null); // Reset editing state
       setFormName('');
       setFormEmail('');
       setFormPassword('');
@@ -49,6 +63,24 @@ const Users: React.FC<UsersProps> = ({ user }) => {
       console.error(e);
     }
     setSubmitting(false);
+  };
+
+  const handleEdit = (user: User) => {
+    setEditingUserId(user.id);
+    setFormName(user.name);
+    setFormEmail(user.email);
+    setFormRole(user.role);
+    setFormPassword(''); // Reset password field (empty = don't change)
+    setShowModal(true);
+  };
+
+  const handleNewUser = () => {
+    setEditingUserId(null);
+    setFormName('');
+    setFormEmail('');
+    setFormRole(Role.LOJA);
+    setFormPassword('');
+    setShowModal(true);
   };
 
   const filteredUsers = users.filter(u =>
@@ -75,7 +107,7 @@ const Users: React.FC<UsersProps> = ({ user }) => {
           <p className="text-gray-400 text-sm mt-1 font-light">{t.users.usersDesc}</p>
         </div>
         <button
-          onClick={() => setShowModal(true)}
+          onClick={handleNewUser}
           className="flex items-center px-4 py-2 bg-black text-white hover:bg-zinc-800 shadow-lg shadow-gray-200 transition-all text-sm font-bold uppercase tracking-widest"
         >
           <UserPlus className="w-4 h-4 mr-2" /> {t.users.newUser}
@@ -131,7 +163,7 @@ const Users: React.FC<UsersProps> = ({ user }) => {
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right">
-                  <button className="text-gray-400 hover:text-black transition-colors mr-3"><Edit className="w-4 h-4" /></button>
+                  <button onClick={() => handleEdit(u)} className="text-gray-400 hover:text-black transition-colors mr-3"><Edit className="w-4 h-4" /></button>
                   <button className="text-gray-400 hover:text-red-600 transition-colors"><Trash2 className="w-4 h-4" /></button>
                 </td>
               </tr>
@@ -144,7 +176,7 @@ const Users: React.FC<UsersProps> = ({ user }) => {
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-300">
           <div className="bg-white w-full max-w-lg shadow-2xl animate-in fade-in zoom-in duration-300 border border-zinc-200">
             <div className="flex justify-between items-center p-8 border-b border-gray-100">
-              <h2 className="text-2xl font-black text-black uppercase italic tracking-tighter">{t.users.newUser}</h2>
+              <h2 className="text-2xl font-black text-black uppercase italic tracking-tighter">{editingUserId ? t.dashboard.edit : t.users.newUser}</h2>
               <button
                 onClick={() => setShowModal(false)}
                 className="text-gray-400 hover:text-black transition-colors p-2 hover:bg-gray-100 rounded-full"
@@ -180,7 +212,7 @@ const Users: React.FC<UsersProps> = ({ user }) => {
                     type="password"
                     value={formPassword}
                     onChange={(e) => setFormPassword(e.target.value)}
-                    placeholder="••••••••"
+                    placeholder={editingUserId ? "Deixe vazio para manter a senha" : "••••••••"}
                   />
                 </div>
               </div>
@@ -197,8 +229,8 @@ const Users: React.FC<UsersProps> = ({ user }) => {
                       key={opt.value}
                       onClick={() => setFormRole(opt.value)}
                       className={`relative flex flex-col items-center justify-center p-4 border-2 transition-all duration-200 group ${formRole === opt.value
-                          ? 'border-black bg-black text-white shadow-lg scale-[1.02]'
-                          : 'border-gray-100 hover:border-black/30 text-gray-600 hover:bg-gray-50'
+                        ? 'border-black bg-black text-white shadow-lg scale-[1.02]'
+                        : 'border-gray-100 hover:border-black/30 text-gray-600 hover:bg-gray-50'
                         }`}
                     >
                       <div className={`w-3 h-3 rounded-full mb-3 border-2 ${formRole === opt.value ? 'bg-white border-white' : 'border-gray-300 group-hover:border-black'
@@ -219,11 +251,11 @@ const Users: React.FC<UsersProps> = ({ user }) => {
                 {t.common.back}
               </button>
               <button
-                onClick={handleCreate}
+                onClick={handleSave}
                 disabled={submitting}
                 className="flex-[2] py-4 px-6 bg-black text-white border-2 border-black hover:bg-zinc-800 hover:border-zinc-800 font-black uppercase tracking-[0.2em] text-xs transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl shadow-black/20"
               >
-                {submitting ? t.form.processing : t.users.create}
+                {submitting ? t.form.processing : (editingUserId ? t.common.save : t.users.create)}
               </button>
             </div>
           </div>

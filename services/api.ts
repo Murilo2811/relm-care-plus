@@ -674,7 +674,7 @@ const RemoteApi = {
       if (error) throw error;
       return data.user;
     },
-    update: async (id: string, user: Partial<User>) => {
+    update: async (id: string, user: Partial<User> & { password?: string }) => {
       if (USE_MOCK) {
         const index = mockUsers.findIndex(u => u.id === id);
         if (index >= 0) {
@@ -693,7 +693,8 @@ const RemoteApi = {
             email: user.email,
             role: user.role,
             storeId: user.storeId,
-            active: user.active
+            active: user.active,
+            password: user.password // Added password support
           }
         }
       });
